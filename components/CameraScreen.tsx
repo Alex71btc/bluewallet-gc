@@ -148,10 +148,13 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           resizeMode="cover"
           onReadCode={handleReadCode}
           torchMode={torchMode ? 'on' : 'off'}
+<<<<<<< HEAD
           resetFocusWhenMotionDetected
           zoom={zoom}
           onZoom={handleZoom}
           maxZoom={10}
+=======
+>>>>>>> 71455da2d (FIX: Scanning speed was limited by unused prop)
           onOrientationChange={handleOrientationChange}
         />
       </View>
