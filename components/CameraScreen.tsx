@@ -139,21 +139,26 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           </View>
         </View>
       )}
-      <View style={styles.cameraContainer}>
-        <Camera
-          ref={cameraRef}
-          style={styles.cameraPreview}
-          cameraType={cameraType}
-          scanBarcode
-          resizeMode="cover"
-          onReadCode={handleReadCode}
-          torchMode={torchMode ? 'on' : 'off'}
-          resetFocusWhenMotionDetected
-          zoom={zoom}
-          onZoom={handleZoom}
-          maxZoom={10}
-          onOrientationChange={handleOrientationChange}
-        />
+      <Camera
+        ref={cameraRef}
+        style={styles.cameraPreview}
+        cameraType={cameraType}
+        scanBarcode
+        resizeMode="cover"
+        onReadCode={handleReadCode}
+        torchMode={torchMode ? 'on' : 'off'}
+
+        // ✅ SPEED: kein Motion-Focus-Reset bei animierten/rotierenden QRs
+        resetFocusWhenMotionDetected={false}
+
+        // ✅ SPEED: throttling nicht zu hoch (30ms ist bewährt)
+        // @ts-ignore
+        scanThrottleDelay={30}
+
+        zoom={zoom}
+        onZoom={handleZoom}
+        maxZoom={10}
+        onOrientationChange={handleOrientationChange}
       </View>
       <View style={styles.bottomButtons}>
         <TouchableOpacity onPress={onCancelButtonPress}>
