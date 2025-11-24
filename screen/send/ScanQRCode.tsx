@@ -107,7 +107,7 @@ const ScanQRCode = () => {
           const merge = true;
           const popToAction = StackActions.popTo(launchedBy, { onBarScanned: data }, { merge });
           if (onBarScanned) {
-            onBarScanned(data);
+            onBarScanned(data, false);
           }
 
           navigation.dispatch(popToAction);
@@ -146,7 +146,7 @@ const ScanQRCode = () => {
           const merge = true;
           const popToAction = StackActions.popTo(launchedBy, { onBarScanned: data }, { merge });
           if (onBarScanned) {
-            onBarScanned(data);
+            onBarScanned(data, false);
           }
 
           navigation.dispatch(popToAction);
@@ -200,7 +200,7 @@ const ScanQRCode = () => {
         const merge = true;
         const popToAction = StackActions.popTo(launchedBy, { onBarScanned: data }, { merge });
         if (onBarScanned) {
-          onBarScanned(data);
+          onBarScanned(data, false);
         }
         navigation.dispatch(popToAction);
       }
@@ -213,7 +213,7 @@ const ScanQRCode = () => {
 
           const popToAction = StackActions.popTo(launchedBy, { onBarScanned: ret.data }, { merge });
           if (onBarScanned) {
-            onBarScanned(ret.data);
+            onBarScanned(ret.data, false);
           }
 
           navigation.dispatch(popToAction);
