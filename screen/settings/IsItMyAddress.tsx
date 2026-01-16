@@ -15,13 +15,15 @@ import presentAlert from '../../components/Alert';
 import { scanQrHelper } from '../../helpers/scan-qr';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
 import SafeAreaScrollView from '../../components/SafeAreaScrollView';
-import { usePlatformStyles } from '../../theme/platformStyles';
+import { platformColors, platformSizing, platformLayout } from '../../components/platform';
 import { useTheme } from '../../components/themes';
 
 const IsItMyAddress: React.FC = () => {
   const { navigate } = useExtendedNavigation();
   const { wallets } = useStorage();
-  const { colors, sizing, layout } = usePlatformStyles();
+  const colors = platformColors;
+  const sizing = platformSizing;
+  const layout = platformLayout;
   const theme = useTheme();
   const scrollViewRef = useRef<ScrollView>(null);
   const firstWalletRef = useRef<View>(null);
@@ -149,7 +151,7 @@ const IsItMyAddress: React.FC = () => {
       paddingHorizontal: sizing.basePadding,
     },
     isItMyAddressCard: {
-      backgroundColor: colors.cardBackground,
+      backgroundColor: colors.card,
       borderRadius: sizing.containerBorderRadius,
       padding: sizing.basePadding,
       ...layout.cardShadow,
@@ -168,7 +170,7 @@ const IsItMyAddress: React.FC = () => {
       flex: 1,
       padding: 8,
       minHeight: 100,
-      color: colors.textColor,
+      color: colors.text,
     },
     clearButton: {
       padding: 8,
@@ -191,7 +193,7 @@ const IsItMyAddress: React.FC = () => {
     addressOwnershipText: {
       marginVertical: 10,
       textAlign: 'center',
-      color: colors.textColor,
+      color: colors.text,
     },
     walletCardContainer: {
       width: '100%',
@@ -230,7 +232,7 @@ const IsItMyAddress: React.FC = () => {
           />
           {address.length > 0 && (
             <TouchableOpacity onPress={clearAddressInput} style={localStyles.clearButton}>
-              <Icon name="close" size={20} color={colors.subtitleColor} />
+              <Icon name="close" size={20} color={colors.secondaryText} />
             </TouchableOpacity>
           )}
         </View>

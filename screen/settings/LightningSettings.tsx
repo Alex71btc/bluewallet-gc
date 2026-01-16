@@ -1,16 +1,13 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { Alert, Linking, StyleSheet, View, Text, Platform, StatusBar } from 'react-native';
+import { Alert, Linking, StyleSheet, View, Platform, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/FontAwesome5';
 import DefaultPreference from 'react-native-default-preference';
 import { BlueLoading } from '../../components/BlueLoading';
 import DeeplinkSchemaMatch from '../../class/deeplink-schema-match';
 import { LightningCustodianWallet } from '../../class/wallets/lightning-custodian-wallet';
 import presentAlert, { AlertType } from '../../components/Alert';
 import { Button } from '../../components/Button';
-import { useTheme } from '../../components/themes';
-import { usePlatformStyles } from '../../theme/platformStyles';
 import loc from '../../loc';
 import triggerHapticFeedback, { HapticFeedbackTypes } from '../../blue_modules/hapticFeedback';
 import { GROUP_IO_BLUEWALLET } from '../../blue_modules/currency';
@@ -18,8 +15,7 @@ import { clearLNDHub, getLNDHub, setLNDHub } from '../../helpers/lndHub';
 import { DetailViewStackParamList } from '../../navigation/DetailViewStackParamList';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
 import AddressInput from '../../components/AddressInput';
-import SafeAreaScrollView from '../../components/SafeAreaScrollView';
-import PlatformListItem from '../../components/PlatformListItem';
+import { SettingsScrollView, SettingsCard, SettingsListItem, SettingsSubtitle } from '../../components/platform';
 
 type LightingSettingsRouteProps = RouteProp<DetailViewStackParamList, 'LightningSettings'>;
 
@@ -27,8 +23,6 @@ const LightningSettings: React.FC = () => {
   const params = useRoute<LightingSettingsRouteProps>().params;
   const [isLoading, setIsLoading] = useState(true);
   const [URI, setURI] = useState<string>();
-  const { colors } = useTheme();
-  const { colors: platformColors, sizing, layout } = usePlatformStyles();
   const { setParams } = useExtendedNavigation();
   const insets = useSafeAreaInsets();
 
@@ -44,39 +38,15 @@ const LightningSettings: React.FC = () => {
   }, [insets.top]);
 
   const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: platformColors.background,
-    },
-    contentContainer: {
-      paddingHorizontal: sizing.contentContainerPaddingHorizontal || 0,
-    },
-    card: {
-      backgroundColor: platformColors.cardBackground,
-      borderRadius: 8,
-      padding: sizing.basePadding,
-      marginBottom: sizing.baseMargin,
-      ...layout.cardShadow,
-    },
-    explanationText: {
-      color: colors.foregroundColor,
-      fontSize: 14,
-      lineHeight: 20,
-    },
     inputContainer: {
-      marginTop: sizing.baseMargin,
-      marginBottom: sizing.baseMargin,
+      marginTop: 16,
+      marginBottom: 16,
     },
     buttonContainer: {
-      marginTop: sizing.baseMargin,
+      marginTop: 16,
     },
     githubContainer: {
       marginTop: 16,
-    },
-    githubItemContainer: {
-      backgroundColor: platformColors.cardBackground,
-      borderRadius: 8,
-      marginBottom: 0,
     },
     addressInput: {
       minHeight: 44,
@@ -164,31 +134,22 @@ const LightningSettings: React.FC = () => {
   };
 
   return (
-    <SafeAreaScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      automaticallyAdjustContentInsets
-      contentInsetAdjustmentBehavior="automatic"
-      headerHeight={headerHeight}
-    >
-      <View style={styles.card}>
-        <Text style={styles.explanationText}>{loc.settings.lightning_settings_explain}</Text>
+    <SettingsScrollView automaticallyAdjustContentInsets contentInsetAdjustmentBehavior="automatic" headerHeight={headerHeight}>
+      <SettingsCard>
+        <SettingsSubtitle>{loc.settings.lightning_settings_explain}</SettingsSubtitle>
 
         <View style={styles.githubContainer}>
-          <PlatformListItem
+          <SettingsListItem
             title="GitHub Repository"
             subtitle="github.com/BlueWallet/LndHub"
             onPress={handleOpenGithub}
-            leftIcon={<Icon name="github" color={platformColors.textColor} size={24} />}
-            containerStyle={styles.githubItemContainer}
-            isFirst
-            isLast
-            bottomDivider={false}
+            iconName="github"
+            position="single"
           />
         </View>
-      </View>
+      </SettingsCard>
 
-      <View style={styles.card}>
+      <SettingsCard>
         <View style={styles.inputContainer}>
           <AddressInput
             isLoading={isLoading}
@@ -204,8 +165,8 @@ const LightningSettings: React.FC = () => {
         <View style={styles.buttonContainer}>
           {isLoading ? <BlueLoading /> : <Button testID="Save" onPress={save} title={loc.settings.save} />}
         </View>
-      </View>
-    </SafeAreaScrollView>
+      </SettingsCard>
+    </SettingsScrollView>
   );
 };
 

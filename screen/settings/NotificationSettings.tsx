@@ -26,8 +26,8 @@ import loc from '../../loc';
 import { openSettings } from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SafeAreaFlatList from '../../components/SafeAreaFlatList';
-import { usePlatformStyles } from '../../theme/platformStyles';
 import PlatformListItem from '../../components/PlatformListItem';
+import { platformColors, platformSizing, platformLayout } from '../../components/platform';
 
 interface SettingItem {
   id: string;
@@ -65,7 +65,6 @@ const NotificationSettings: React.FC = () => {
   const [URI, setURI] = useState<string | undefined>();
   const [tapCount, setTapCount] = useState(0);
   const { colors } = useTheme();
-  const { colors: platformColors, sizing, layout } = usePlatformStyles();
 
   const styles = StyleSheet.create({
     container: {
@@ -73,30 +72,30 @@ const NotificationSettings: React.FC = () => {
       backgroundColor: platformColors.background,
     },
     listItemContainer: {
-      backgroundColor: platformColors.cardBackground,
+      backgroundColor: platformColors.card,
     },
     contentContainer: {
-      paddingHorizontal: sizing.contentContainerPaddingHorizontal || 0,
-      marginHorizontal: sizing.contentContainerMarginHorizontal || 0,
-      paddingBottom: sizing.sectionContainerMarginBottom || 0,
+      paddingHorizontal: platformSizing.contentContainerPaddingHorizontal || 0,
+      marginHorizontal: platformSizing.contentContainerMarginHorizontal || 0,
+      paddingBottom: platformSizing.sectionContainerMarginBottom || 0,
     },
     headerOffset: {
-      height: sizing.firstSectionContainerPaddingTop,
+      height: platformSizing.firstSectionContainerPaddingTop,
     },
     card: {
-      backgroundColor: platformColors.cardBackground,
-      borderRadius: sizing.containerBorderRadius,
+      backgroundColor: platformColors.card,
+      borderRadius: platformSizing.containerBorderRadius,
       padding: 16,
       marginVertical: 8,
     },
     multilineText: {
-      color: platformColors.titleColor,
+      color: platformColors.text,
       lineHeight: 20,
       paddingBottom: 10,
     },
     centered: {
       textAlign: 'center',
-      color: platformColors.titleColor,
+      color: platformColors.text,
       marginVertical: 4,
     },
     uri: {
@@ -113,7 +112,7 @@ const NotificationSettings: React.FC = () => {
     },
     uriText: {
       flex: 1,
-      color: platformColors.subtitleColor,
+      color: platformColors.secondaryText,
       marginHorizontal: 8,
       minHeight: 36,
       height: 36,
@@ -125,7 +124,7 @@ const NotificationSettings: React.FC = () => {
     divider: {
       marginVertical: 16,
       height: 0.5,
-      backgroundColor: platformColors.separatorColor,
+      backgroundColor: platformColors.separator,
     },
     sectionSpacing: {
       height: 24,
@@ -135,14 +134,14 @@ const NotificationSettings: React.FC = () => {
       paddingTop: 12,
       paddingHorizontal: 16,
       borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: platformColors.separatorColor,
-      backgroundColor: platformColors.cardBackground,
-      borderBottomLeftRadius: sizing.containerBorderRadius,
-      borderBottomRightRadius: sizing.containerBorderRadius,
+      borderTopColor: platformColors.separator,
+      backgroundColor: platformColors.card,
+      borderBottomLeftRadius: platformSizing.containerBorderRadius,
+      borderBottomRightRadius: platformSizing.containerBorderRadius,
     },
     explanationText: {
-      color: platformColors.subtitleColor,
-      fontSize: sizing.subtitleFontSize,
+      color: platformColors.secondaryText,
+      fontSize: platformSizing.subtitleFontSize,
       lineHeight: 20,
       paddingBottom: 16,
     },
@@ -458,9 +457,9 @@ const NotificationSettings: React.FC = () => {
             subtitle={item.subtitle}
             containerStyle={[
               styles.listItemContainer,
-              layout.showBorderRadius && {
-                borderTopLeftRadius: sizing.containerBorderRadius * 1.5,
-                borderTopRightRadius: sizing.containerBorderRadius * 1.5,
+              platformLayout.showBorderRadius && {
+                borderTopLeftRadius: platformSizing.containerBorderRadius * 1.5,
+                borderTopRightRadius: platformSizing.containerBorderRadius * 1.5,
               },
             ]}
             Component={item.Component}
@@ -488,11 +487,11 @@ const NotificationSettings: React.FC = () => {
           chevron={item.chevron}
           isFirst={isStandaloneItem}
           isLast={isStandaloneItem}
-          bottomDivider={layout.showBorderBottom && !isStandaloneItem}
+          bottomDivider={platformLayout.showBorderBottom && !isStandaloneItem}
         />
       );
     },
-    [styles.listItemContainer, layout.showBorderBottom, layout.showBorderRadius, settingsItems, sizing.containerBorderRadius],
+    [styles.listItemContainer, settingsItems],
   );
 
   const keyExtractor = useCallback((item: SettingItem) => item.id, []);

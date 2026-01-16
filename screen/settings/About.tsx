@@ -16,10 +16,16 @@ import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
 import { useSettings } from '../../hooks/context/useSettings';
 import SafeAreaFlatList from '../../components/SafeAreaFlatList';
 import PlatformListItem from '../../components/PlatformListItem';
-import { usePlatformStyles } from '../../theme/platformStyles';
-import type { IconProps } from '../../theme/platformStyles';
+import { platformColors, platformSizing, platformLayout } from '../../components/platform';
 
 const branch = require('../../current-branch.json');
+
+type IconProps = {
+  name: string;
+  type: string;
+  color: string;
+  backgroundColor?: string;
+};
 
 interface AboutItem {
   id: string;
@@ -37,7 +43,9 @@ const About: React.FC = () => {
   const { navigate } = useExtendedNavigation();
   const { width, height } = useWindowDimensions();
   const { isElectrumDisabled } = useSettings();
-  const { styles, colors, sizing, layout } = usePlatformStyles();
+  const colors = platformColors;
+  const sizing = platformSizing;
+  const layout = platformLayout;
   const insets = useSafeAreaInsets();
 
   // Calculate header height for Android with transparent header
@@ -67,7 +75,76 @@ const About: React.FC = () => {
     xIcon: {
       fontSize: 24,
       fontWeight: 'bold',
-      color: colors.textColor,
+      color: colors.text,
+    },
+  });
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    headerOffset: {
+      height: 0,
+    },
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: sizing.cardBorderRadius * 1.5,
+      padding: sizing.horizontalPadding,
+      marginVertical: 8,
+    },
+    center: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    logo: {
+      width: 120,
+      height: 120,
+      marginBottom: 8,
+      resizeMode: 'contain',
+    },
+    textFree: {
+      marginTop: 8,
+      fontSize: 16,
+      color: colors.text,
+      textAlign: 'center',
+    },
+    textBackup: {
+      marginTop: 4,
+      fontSize: 14,
+      color: colors.secondaryText,
+      textAlign: 'center',
+    },
+    sectionSpacing: {
+      height: 16,
+    },
+    sectionHeaderContainer: {
+      marginTop: 16,
+      marginBottom: 8,
+      paddingHorizontal: sizing.horizontalPadding,
+    },
+    sectionHeaderText: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: colors.text,
+    },
+    footerContainer: {
+      marginTop: 16,
+      paddingHorizontal: sizing.horizontalPadding,
+    },
+    footerText: {
+      fontSize: 12,
+      color: colors.secondaryText,
+      textAlign: 'center',
+      marginBottom: 4,
+    },
+    copyToClipboard: {
+      marginTop: 8,
+      alignItems: 'center',
+    },
+    copyToClipboardText: {
+      fontSize: 12,
+      color: colors.text,
     },
   });
 
@@ -108,7 +185,7 @@ const About: React.FC = () => {
       openAppStoreIfInAppFails: true,
       fallbackPlatformURL: 'https://bluewallet.io',
     };
-    Rate.rate(options, success => {
+    Rate.rate(options, (success: boolean) => {
       if (success) {
         console.log('User Rated.');
       }
@@ -174,14 +251,14 @@ const About: React.FC = () => {
       {
         id: 'telegram',
         title: loc.settings.about_sm_telegram,
-        leftIcon: <Icon name="telegram-plane" size={24} color={colors.textColor} />,
+        leftIcon: <Icon name="telegram-plane" size={24} color={colors.text} />,
         onPress: handleOnTelegramPress,
         section: 2,
       },
       {
         id: 'github',
         title: loc.settings.about_sm_github,
-        leftIcon: <Icon name="github" size={24} color={colors.textColor} />,
+        leftIcon: <Icon name="github" size={24} color={colors.text} />,
         onPress: handleOnGithubPress,
         section: 2,
       },
@@ -298,7 +375,7 @@ const About: React.FC = () => {
     sizing.containerBorderRadius,
     layout.showBorderRadius,
     handleOnRatePress,
-    colors.textColor,
+    colors.text,
     handleOnXPress,
     handleOnTelegramPress,
     handleOnGithubPress,
@@ -341,7 +418,7 @@ const About: React.FC = () => {
             subtitle={item.subtitle}
             containerStyle={[
               {
-                backgroundColor: colors.cardBackground,
+                backgroundColor: colors.card,
                 marginHorizontal: sizing.contentContainerMarginHorizontal || 0,
                 ...(Platform.OS === 'android' &&
                   sizing.contentContainerPaddingHorizontal !== undefined && {
@@ -383,7 +460,7 @@ const About: React.FC = () => {
           subtitle={item.subtitle}
           containerStyle={[
             {
-              backgroundColor: colors.cardBackground,
+              backgroundColor: colors.card,
               marginHorizontal: sizing.contentContainerMarginHorizontal || 0,
               ...(Platform.OS === 'android' &&
                 sizing.contentContainerPaddingHorizontal !== undefined && {
@@ -414,7 +491,7 @@ const About: React.FC = () => {
       styles.sectionHeaderContainer,
       styles.sectionHeaderText,
       aboutItems,
-      colors.cardBackground,
+      colors.card,
       sizing.contentContainerMarginHorizontal,
       sizing.contentContainerPaddingHorizontal,
       sizing.containerBorderRadius,

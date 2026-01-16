@@ -15,7 +15,7 @@ import {
 import DefaultPreference from 'react-native-default-preference';
 import { DismissKeyboardInputAccessory, DismissKeyboardInputAccessoryViewID } from '../../components/DismissKeyboardInputAccessory';
 import { useTheme } from '../../components/themes';
-import { usePlatformStyles } from '../../theme/platformStyles';
+import { platformSizing } from '../../components/platform';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { DetailViewStackParamList } from '../../navigation/DetailViewStackParamList';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
@@ -44,7 +44,7 @@ const SET_PREFERRED_PREFIX = 'set_preferred_';
 
 const ElectrumSettings: React.FC = () => {
   const { colors } = useTheme();
-  const { sizing } = usePlatformStyles();
+  const sizing = platformSizing;
   const params = useRoute<RouteProps>().params;
   const { server } = params;
   const navigation = useExtendedNavigation();
@@ -68,7 +68,7 @@ const ElectrumSettings: React.FC = () => {
   // Calculate header height for Android with transparent header
   const headerHeight = useMemo(() => {
     if (Platform.OS === 'android') {
-      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24; 
+      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24;
       return 56 + statusBarHeight;
     }
     return 0;
