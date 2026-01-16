@@ -25,9 +25,8 @@ import { useTheme } from '../../components/themes';
 import loc from '../../loc';
 import { openSettings } from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import SafeAreaFlatList from '../../components/SafeAreaFlatList';
-import PlatformListItem from '../../components/PlatformListItem';
-import { platformColors, platformSizing, platformLayout } from '../../components/platform';
+import { SettingsCard, SettingsFlatList, SettingsListItem, SettingsSubtitle } from '../../components/platform';
+import { platformColors } from '../../components/platform';
 
 interface SettingItem {
   id: string;
@@ -67,25 +66,7 @@ const NotificationSettings: React.FC = () => {
   const { colors } = useTheme();
 
   const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: platformColors.background,
-    },
-    listItemContainer: {
-      backgroundColor: platformColors.card,
-    },
-    contentContainer: {
-      paddingHorizontal: platformSizing.contentContainerPaddingHorizontal || 0,
-      marginHorizontal: platformSizing.contentContainerMarginHorizontal || 0,
-      paddingBottom: platformSizing.sectionContainerMarginBottom || 0,
-    },
-    headerOffset: {
-      height: platformSizing.firstSectionContainerPaddingTop,
-    },
     card: {
-      backgroundColor: platformColors.card,
-      borderRadius: platformSizing.containerBorderRadius,
-      padding: 16,
       marginVertical: 8,
     },
     multilineText: {
@@ -128,22 +109,6 @@ const NotificationSettings: React.FC = () => {
     },
     sectionSpacing: {
       height: 24,
-    },
-
-    explanationContainer: {
-      paddingTop: 12,
-      paddingHorizontal: 16,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: platformColors.separator,
-      backgroundColor: platformColors.card,
-      borderBottomLeftRadius: platformSizing.containerBorderRadius,
-      borderBottomRightRadius: platformSizing.containerBorderRadius,
-    },
-    explanationText: {
-      color: platformColors.secondaryText,
-      fontSize: platformSizing.subtitleFontSize,
-      lineHeight: 20,
-      paddingBottom: 16,
     },
   });
 
@@ -300,11 +265,11 @@ const NotificationSettings: React.FC = () => {
     return (
       <View>
         <View style={styles.divider} />
-        <View style={styles.card}>
+        <SettingsCard style={styles.card}>
           <Pressable onPress={handleTap}>
             <Text style={styles.multilineText}>{loc.settings.groundcontrol_explanation}</Text>
           </Pressable>
-        </View>
+        </SettingsCard>
 
         <ButtonRNElements
           icon={{
@@ -319,7 +284,7 @@ const NotificationSettings: React.FC = () => {
           buttonStyle={styles.buttonStyle}
         />
 
-        <View style={styles.card}>
+        <SettingsCard style={styles.card}>
           <View style={styles.uri}>
             <TextInput
               placeholder={getDefaultUri()}
@@ -349,7 +314,7 @@ const NotificationSettings: React.FC = () => {
 
           <BlueSpacing20 />
           <Button onPress={save} title={loc.settings.save} />
-        </View>
+        </SettingsCard>
       </View>
     );
   }, [
@@ -390,9 +355,9 @@ const NotificationSettings: React.FC = () => {
         id: 'notificationsExplanation',
         title: '',
         customContent: (
-          <View style={styles.explanationContainer}>
-            <Text style={styles.explanationText}>{loc.settings.push_notifications_explanation}</Text>
-          </View>
+          <SettingsCard compact>
+            <SettingsSubtitle>{loc.settings.push_notifications_explanation}</SettingsSubtitle>
+          </SettingsCard>
         ),
         section: 1,
       },
@@ -428,8 +393,6 @@ const NotificationSettings: React.FC = () => {
     isNotificationsEnabledState,
     onNotificationsSwitch,
     isLoading,
-    styles.explanationContainer,
-    styles.explanationText,
     styles.sectionSpacing,
     renderDeveloperSettings,
     onSystemSettings,
@@ -444,24 +407,17 @@ const NotificationSettings: React.FC = () => {
         return <>{item.customContent}</>;
       }
 
-      const isStandaloneItem = item.id === 'privacySystemSettings';
-
-      const currentSectionItems = items.filter(i => i.section === item.section);
-      const indexInSection = currentSectionItems.indexOf(item);
+      const sectionItems = items.filter(i => i.section === item.section && !i.customContent);
+      const indexInSection = sectionItems.indexOf(item);
       const isFirstInSection = indexInSection === 0;
+      const isLastInSection = indexInSection === sectionItems.length - 1;
+      const position = isFirstInSection && isLastInSection ? 'single' : isFirstInSection ? 'first' : isLastInSection ? 'last' : 'middle';
 
       if (item.isSwitch) {
         return (
-          <PlatformListItem
+          <SettingsListItem
             title={item.title}
             subtitle={item.subtitle}
-            containerStyle={[
-              styles.listItemContainer,
-              platformLayout.showBorderRadius && {
-                borderTopLeftRadius: platformSizing.containerBorderRadius * 1.5,
-                borderTopRightRadius: platformSizing.containerBorderRadius * 1.5,
-              },
-            ]}
             Component={item.Component}
             switch={{
               value: item.switchValue || false,
@@ -470,43 +426,33 @@ const NotificationSettings: React.FC = () => {
             }}
             isLoading={item.isLoading}
             testID={item.testID}
-            isFirst={isFirstInSection}
-            isLast={false}
-            bottomDivider={false}
+            position={position}
           />
         );
       }
 
       return (
-        <PlatformListItem
+        <SettingsListItem
           title={item.title}
           subtitle={item.subtitle}
-          containerStyle={styles.listItemContainer}
           onPress={item.onPress}
           testID={item.testID}
           chevron={item.chevron}
-          isFirst={isStandaloneItem}
-          isLast={isStandaloneItem}
-          bottomDivider={platformLayout.showBorderBottom && !isStandaloneItem}
+          position={position}
         />
       );
     },
-    [styles.listItemContainer, settingsItems],
+    [settingsItems],
   );
 
   const keyExtractor = useCallback((item: SettingItem) => item.id, []);
 
-  const ListHeaderComponent = useCallback(() => <View style={styles.headerOffset} />, [styles.headerOffset]);
-
   return (
-    <SafeAreaFlatList
+    <SettingsFlatList
       headerHeight={headerHeight}
-      style={styles.container}
       data={settingsItems()}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
-      ListHeaderComponent={ListHeaderComponent}
-      contentContainerStyle={styles.contentContainer}
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustContentInsets
       removeClippedSubviews

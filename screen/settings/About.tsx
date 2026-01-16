@@ -14,9 +14,8 @@ import Button from '../../components/Button';
 import loc, { formatStringAddTwoWhiteSpaces } from '../../loc';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
 import { useSettings } from '../../hooks/context/useSettings';
-import SafeAreaFlatList from '../../components/SafeAreaFlatList';
-import PlatformListItem from '../../components/PlatformListItem';
-import { platformColors, platformSizing, platformLayout } from '../../components/platform';
+import { SettingsCard, SettingsFlatList, SettingsListItem, SettingsSection, SettingsSectionHeader } from '../../components/platform';
+import { platformColors } from '../../components/platform';
 
 const branch = require('../../current-branch.json');
 
@@ -44,8 +43,6 @@ const About: React.FC = () => {
   const { width, height } = useWindowDimensions();
   const { isElectrumDisabled } = useSettings();
   const colors = platformColors;
-  const sizing = platformSizing;
-  const layout = platformLayout;
   const insets = useSafeAreaInsets();
 
   // Calculate header height for Android with transparent header
@@ -80,17 +77,7 @@ const About: React.FC = () => {
   });
 
   const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    headerOffset: {
-      height: 0,
-    },
     card: {
-      backgroundColor: colors.card,
-      borderRadius: sizing.cardBorderRadius * 1.5,
-      padding: sizing.horizontalPadding,
       marginVertical: 8,
     },
     center: {
@@ -118,19 +105,8 @@ const About: React.FC = () => {
     sectionSpacing: {
       height: 16,
     },
-    sectionHeaderContainer: {
-      marginTop: 16,
-      marginBottom: 8,
-      paddingHorizontal: sizing.horizontalPadding,
-    },
-    sectionHeaderText: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      color: colors.text,
-    },
     footerContainer: {
       marginTop: 16,
-      paddingHorizontal: sizing.horizontalPadding,
     },
     footerText: {
       fontSize: 12,
@@ -215,29 +191,18 @@ const About: React.FC = () => {
         id: 'header',
         title: '',
         customContent: (
-          <View
-            style={[
-              styles.card,
-              localStyles.headerCard,
-              {
-                ...(Platform.OS === 'ios' && {
-                  marginHorizontal: sizing.contentContainerMarginHorizontal || 0,
-                }),
-                ...(layout.showBorderRadius && {
-                  borderRadius: sizing.containerBorderRadius * 1.5,
-                }),
-              },
-            ]}
-          >
-            <View style={styles.center}>
-              <Image style={styles.logo} source={require('../../img/bluebeast.png')} />
-              <Text style={styles.textFree}>{loc.settings.about_free}</Text>
-              <Text style={styles.textBackup}>{formatStringAddTwoWhiteSpaces(loc.settings.about_backup)}</Text>
-              {((Platform.OS === 'android' && hasGmsSync()) || Platform.OS !== 'android') && (
-                <Button onPress={handleOnRatePress} title={loc.settings.about_review + ' ⭐🙏'} />
-              )}
-            </View>
-          </View>
+          <SettingsSection compact>
+            <SettingsCard style={[styles.card, localStyles.headerCard]}>
+              <View style={styles.center}>
+                <Image style={styles.logo} source={require('../../img/bluebeast.png')} />
+                <Text style={styles.textFree}>{loc.settings.about_free}</Text>
+                <Text style={styles.textBackup}>{formatStringAddTwoWhiteSpaces(loc.settings.about_backup)}</Text>
+                {((Platform.OS === 'android' && hasGmsSync()) || Platform.OS !== 'android') && (
+                  <Button onPress={handleOnRatePress} title={loc.settings.about_review + ' ⭐🙏'} />
+                )}
+              </View>
+            </SettingsCard>
+          </SettingsSection>
         ),
         section: 1,
       },
@@ -266,26 +231,16 @@ const About: React.FC = () => {
         id: 'builtWith',
         title: '',
         customContent: (
-          <View
-            style={[
-              styles.card,
-              {
-                ...(Platform.OS === 'ios' && {
-                  marginHorizontal: sizing.contentContainerMarginHorizontal || 0,
-                }),
-                ...(layout.showBorderRadius && {
-                  borderRadius: sizing.containerBorderRadius * 1.5,
-                }),
-              },
-            ]}
-          >
-            <BlueTextCentered>{loc.settings.about_awesome} 👍</BlueTextCentered>
-            <BlueSpacing20 />
-            <BlueTextCentered>React Native</BlueTextCentered>
-            <BlueTextCentered>bitcoinjs-lib</BlueTextCentered>
-            <BlueTextCentered>Nodejs</BlueTextCentered>
-            <BlueTextCentered>Electrum server</BlueTextCentered>
-          </View>
+          <SettingsSection compact>
+            <SettingsCard style={styles.card}>
+              <BlueTextCentered>{loc.settings.about_awesome} 👍</BlueTextCentered>
+              <BlueSpacing20 />
+              <BlueTextCentered>React Native</BlueTextCentered>
+              <BlueTextCentered>bitcoinjs-lib</BlueTextCentered>
+              <BlueTextCentered>Nodejs</BlueTextCentered>
+              <BlueTextCentered>Electrum server</BlueTextCentered>
+            </SettingsCard>
+          </SettingsSection>
         ),
         section: 2.5,
       },
@@ -371,9 +326,6 @@ const About: React.FC = () => {
     styles.copyToClipboardText,
     localStyles.headerCard,
     localStyles.xIcon,
-    sizing.contentContainerMarginHorizontal,
-    sizing.containerBorderRadius,
-    layout.showBorderRadius,
     handleOnRatePress,
     colors.text,
     handleOnXPress,
@@ -396,127 +348,44 @@ const About: React.FC = () => {
       }
 
       if (item.title && !item.leftIcon && !item.onPress && item.section) {
-        return (
-          <View style={styles.sectionHeaderContainer}>
-            <Text style={styles.sectionHeaderText}>{item.title}</Text>
-          </View>
-        );
-      }
-
-      if (item.leftIcon && item.onPress) {
-        const currentSection = Math.floor(item.section || 0);
-        const sectionItems = aboutItems().filter(i => Math.floor(i.section || 0) === currentSection && i.leftIcon && i.onPress);
-
-        const indexInSection = sectionItems.findIndex(i => i.id === item.id);
-
-        const isFirstInSection = indexInSection === 0;
-        const isLastInSection = indexInSection === sectionItems.length - 1;
-
-        return (
-          <PlatformListItem
-            title={item.title}
-            subtitle={item.subtitle}
-            containerStyle={[
-              {
-                backgroundColor: colors.card,
-                marginHorizontal: sizing.contentContainerMarginHorizontal || 0,
-                ...(Platform.OS === 'android' &&
-                  sizing.contentContainerPaddingHorizontal !== undefined && {
-                    paddingHorizontal: sizing.contentContainerPaddingHorizontal,
-                  }),
-              },
-              layout.showBorderRadius &&
-                isFirstInSection && {
-                  borderTopLeftRadius: sizing.containerBorderRadius * 1.5,
-                  borderTopRightRadius: sizing.containerBorderRadius * 1.5,
-                },
-              layout.showBorderRadius &&
-                isLastInSection && {
-                  borderBottomLeftRadius: sizing.containerBorderRadius * 1.5,
-                  borderBottomRightRadius: sizing.containerBorderRadius * 1.5,
-                },
-            ]}
-            leftIcon={item.leftIcon}
-            onPress={item.onPress}
-            testID={item.testID}
-            chevron={item.chevron}
-            bottomDivider={!isLastInSection}
-            isFirst={isFirstInSection}
-            isLast={isLastInSection}
-          />
-        );
+        return <SettingsSectionHeader title={item.title} />;
       }
 
       const currentSection = Math.floor(item.section || 0);
-      const sectionItems = aboutItems().filter(i => Math.floor(i.section || 0) === currentSection);
-
+      const sectionItems = aboutItems().filter(
+        i => Math.floor(i.section || 0) === currentSection && !i.customContent && (i.onPress || i.leftIcon || i.chevron || i.subtitle),
+      );
       const indexInSection = sectionItems.findIndex(i => i.id === item.id);
-      const isLastInSection = indexInSection === sectionItems.length - 1;
       const isFirstInSection = indexInSection === 0;
+      const isLastInSection = indexInSection === sectionItems.length - 1;
+      const position = isFirstInSection && isLastInSection ? 'single' : isFirstInSection ? 'first' : isLastInSection ? 'last' : 'middle';
 
       return (
-        <PlatformListItem
+        <SettingsListItem
           title={item.title}
           subtitle={item.subtitle}
-          containerStyle={[
-            {
-              backgroundColor: colors.card,
-              marginHorizontal: sizing.contentContainerMarginHorizontal || 0,
-              ...(Platform.OS === 'android' &&
-                sizing.contentContainerPaddingHorizontal !== undefined && {
-                  paddingHorizontal: sizing.contentContainerPaddingHorizontal,
-                }),
-            },
-            layout.showBorderRadius &&
-              isFirstInSection && {
-                borderTopLeftRadius: sizing.containerBorderRadius * 1.5,
-                borderTopRightRadius: sizing.containerBorderRadius * 1.5,
-              },
-            layout.showBorderRadius &&
-              isLastInSection && {
-                borderBottomLeftRadius: sizing.containerBorderRadius * 1.5,
-                borderBottomRightRadius: sizing.containerBorderRadius * 1.5,
-              },
-          ]}
+          leftIcon={item.leftIcon}
           onPress={item.onPress}
           testID={item.testID}
           chevron={item.chevron}
-          bottomDivider={!isLastInSection}
-          isFirst={isFirstInSection}
-          isLast={isLastInSection}
+          position={position}
         />
       );
     },
-    [
-      styles.sectionHeaderContainer,
-      styles.sectionHeaderText,
-      aboutItems,
-      colors.card,
-      sizing.contentContainerMarginHorizontal,
-      sizing.contentContainerPaddingHorizontal,
-      sizing.containerBorderRadius,
-      layout.showBorderRadius,
-    ],
+    [aboutItems],
   );
 
   const keyExtractor = useCallback((item: AboutItem) => item.id, []);
 
-  const ListHeaderComponent = useCallback(() => <View style={styles.headerOffset} />, [styles.headerOffset]);
-
   const ListFooterComponent = useCallback(() => <View style={localStyles.sectionSpacing} />, [localStyles.sectionSpacing]);
 
   return (
-    <SafeAreaFlatList
-      style={styles.container}
+    <SettingsFlatList
       data={aboutItems()}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       testID="AboutScrollView"
-      ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={ListFooterComponent}
-      contentContainerStyle={{
-        paddingHorizontal: sizing.contentContainerPaddingHorizontal || 0,
-      }}
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustContentInsets
       removeClippedSubviews

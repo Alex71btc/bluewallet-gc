@@ -15,7 +15,7 @@ import {
 import DefaultPreference from 'react-native-default-preference';
 import { DismissKeyboardInputAccessory, DismissKeyboardInputAccessoryViewID } from '../../components/DismissKeyboardInputAccessory';
 import { useTheme } from '../../components/themes';
-import { platformSizing } from '../../components/platform';
+import { SettingsScrollView } from '../../components/platform';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { DetailViewStackParamList } from '../../navigation/DetailViewStackParamList';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
@@ -29,7 +29,6 @@ import ListItem, { PressableWrapper } from '../../components/ListItem';
 import HeaderMenuButton from '../../components/HeaderMenuButton';
 import { useSettings } from '../../hooks/context/useSettings';
 import { suggestedServers, hardcodedPeers, presentResetToDefaultsAlert } from '../../blue_modules/BlueElectrum';
-import SafeAreaScrollView from '../../components/SafeAreaScrollView';
 import { BlueSpacing10, BlueSpacing20 } from '../../components/BlueSpacing';
 
 type RouteProps = RouteProp<DetailViewStackParamList, 'ElectrumSettings'>;
@@ -44,7 +43,6 @@ const SET_PREFERRED_PREFIX = 'set_preferred_';
 
 const ElectrumSettings: React.FC = () => {
   const { colors } = useTheme();
-  const sizing = platformSizing;
   const params = useRoute<RouteProps>().params;
   const { server } = params;
   const navigation = useExtendedNavigation();
@@ -615,15 +613,12 @@ const ElectrumSettings: React.FC = () => {
   };
 
   return (
-    <SafeAreaScrollView
+    <SettingsScrollView
       keyboardShouldPersistTaps="always"
       automaticallyAdjustContentInsets
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustKeyboardInsets
       testID="ElectrumSettingsScrollView"
-      contentContainerStyle={{
-        paddingHorizontal: sizing.contentContainerPaddingHorizontal || 0,
-      }}
       headerHeight={headerHeight}
     >
       <ListItem
@@ -639,7 +634,7 @@ const ElectrumSettings: React.FC = () => {
       />
 
       {!isElectrumDisabled && renderElectrumSettings()}
-    </SafeAreaScrollView>
+    </SettingsScrollView>
   );
 };
 

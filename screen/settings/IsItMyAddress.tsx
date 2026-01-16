@@ -14,16 +14,14 @@ import triggerHapticFeedback, { HapticFeedbackTypes } from '../../blue_modules/h
 import presentAlert from '../../components/Alert';
 import { scanQrHelper } from '../../helpers/scan-qr';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
-import SafeAreaScrollView from '../../components/SafeAreaScrollView';
-import { platformColors, platformSizing, platformLayout } from '../../components/platform';
+import { SettingsCard, SettingsScrollView } from '../../components/platform';
+import { platformColors } from '../../components/platform';
 import { useTheme } from '../../components/themes';
 
 const IsItMyAddress: React.FC = () => {
   const { navigate } = useExtendedNavigation();
   const { wallets } = useStorage();
   const colors = platformColors;
-  const sizing = platformSizing;
-  const layout = platformLayout;
   const theme = useTheme();
   const scrollViewRef = useRef<ScrollView>(null);
   const firstWalletRef = useRef<View>(null);
@@ -143,19 +141,6 @@ const IsItMyAddress: React.FC = () => {
   };
 
   const localStyles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    contentContainer: {
-      paddingHorizontal: sizing.basePadding,
-    },
-    isItMyAddressCard: {
-      backgroundColor: colors.card,
-      borderRadius: sizing.containerBorderRadius,
-      padding: sizing.basePadding,
-      ...layout.cardShadow,
-    },
     textInputContainer: {
       flexDirection: 'row',
       borderWidth: 1,
@@ -178,13 +163,13 @@ const IsItMyAddress: React.FC = () => {
       alignItems: 'center',
     },
     buttonSpacing: {
-      height: sizing.baseMargin || 16,
+      height: 16,
     },
     buttonSpacingSmall: {
-      height: (sizing.baseMargin || 16) / 2,
+      height: 8,
     },
     spacingLarge: {
-      height: (sizing.baseMargin || 16) * 2,
+      height: 32,
     },
     addressCheckContainer: {
       width: '100%',
@@ -209,16 +194,14 @@ const IsItMyAddress: React.FC = () => {
   });
 
   return (
-    <SafeAreaScrollView
+    <SettingsScrollView
       ref={scrollViewRef}
-      style={localStyles.container}
-      contentContainerStyle={localStyles.contentContainer}
       automaticallyAdjustContentInsets
       automaticallyAdjustKeyboardInsets
       contentInsetAdjustmentBehavior="automatic"
       headerHeight={headerHeight}
     >
-      <View style={localStyles.isItMyAddressCard}>
+      <SettingsCard>
         <View style={localStyles.textInputContainer}>
           <TextInput
             style={localStyles.textInput}
@@ -285,8 +268,8 @@ const IsItMyAddress: React.FC = () => {
               <BlueSpacing20 />
             </View>
           ))}
-      </View>
-    </SafeAreaScrollView>
+      </SettingsCard>
+    </SettingsScrollView>
   );
 };
 
