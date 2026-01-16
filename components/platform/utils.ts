@@ -104,7 +104,7 @@ export const platformSizing = {
   titleFontSize: isIOS ? 17 : 16,
   subtitleFontSize: isIOS ? 15 : 14,
   titleFontWeight: (isIOS ? '600' : '500') as '600' | '500',
-  subtitleFontWeight: '400' as '400',
+  subtitleFontWeight: '400' as const,
   subtitlePaddingVertical: isIOS ? 2 : 2,
   subtitleLineHeight: isIOS ? 20 : 20,
 

@@ -14,8 +14,14 @@ import Button from '../../components/Button';
 import loc, { formatStringAddTwoWhiteSpaces } from '../../loc';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
 import { useSettings } from '../../hooks/context/useSettings';
-import { SettingsCard, SettingsFlatList, SettingsListItem, SettingsSection, SettingsSectionHeader } from '../../components/platform';
-import { platformColors } from '../../components/platform';
+import {
+  SettingsCard,
+  SettingsFlatList,
+  SettingsListItem,
+  SettingsSection,
+  SettingsSectionHeader,
+  platformColors,
+} from '../../components/platform';
 
 const branch = require('../../current-branch.json');
 

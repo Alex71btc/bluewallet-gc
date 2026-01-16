@@ -25,8 +25,7 @@ import { useTheme } from '../../components/themes';
 import loc from '../../loc';
 import { openSettings } from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SettingsCard, SettingsFlatList, SettingsListItem, SettingsSubtitle } from '../../components/platform';
-import { platformColors } from '../../components/platform';
+import { SettingsCard, SettingsFlatList, SettingsListItem, SettingsSubtitle, platformColors } from '../../components/platform';
 
 interface SettingItem {
   id: string;
@@ -389,14 +388,7 @@ const NotificationSettings: React.FC = () => {
     ];
 
     return items.filter(item => item.title !== '' || item.customContent);
-  }, [
-    isNotificationsEnabledState,
-    onNotificationsSwitch,
-    isLoading,
-    styles.sectionSpacing,
-    renderDeveloperSettings,
-    onSystemSettings,
-  ]);
+  }, [isNotificationsEnabledState, onNotificationsSwitch, isLoading, styles.sectionSpacing, renderDeveloperSettings, onSystemSettings]);
 
   const renderItem = useCallback(
     (props: { item: SettingItem }) => {

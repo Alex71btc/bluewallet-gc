@@ -14,8 +14,7 @@ import triggerHapticFeedback, { HapticFeedbackTypes } from '../../blue_modules/h
 import presentAlert from '../../components/Alert';
 import { scanQrHelper } from '../../helpers/scan-qr';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
-import { SettingsCard, SettingsScrollView } from '../../components/platform';
-import { platformColors } from '../../components/platform';
+import { SettingsCard, SettingsScrollView, platformColors } from '../../components/platform';
 import { useTheme } from '../../components/themes';
 
 const IsItMyAddress: React.FC = () => {

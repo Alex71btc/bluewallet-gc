@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
-import { FlatList, FlatListProps, StyleSheet, View, ViewStyle } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FlatListProps, StyleSheet, View, ViewStyle } from 'react-native';
+import SafeAreaFlatList from '../SafeAreaFlatList';
 import { platformColors, platformLayout, platformSizing, isAndroid } from './utils';
 
 interface PlatformFlatListProps<ItemT> extends Omit<FlatListProps<ItemT>, 'style' | 'contentContainerStyle'> {
@@ -13,31 +13,17 @@ interface PlatformFlatListProps<ItemT> extends Omit<FlatListProps<ItemT>, 'style
 function PlatformFlatListComponent<ItemT>(props: PlatformFlatListProps<ItemT>) {
   const { style, contentContainerStyle, headerHeight = 0, additionalBottomPadding = 0, ItemSeparatorComponent, ...restProps } = props;
 
-  const insets = useSafeAreaInsets();
-
-  const computedStyle = useMemo(() => {
-    return StyleSheet.flatten([
-      {
-        flex: 1,
-        backgroundColor: platformColors.background,
-      },
-      style,
-    ]);
-  }, [style]);
-
   const computedContentContainerStyle = useMemo(() => {
-    const topPadding = headerHeight > 0 ? headerHeight : 0;
+    if (!isAndroid) return contentContainerStyle;
 
     return StyleSheet.flatten([
       {
-        paddingTop: topPadding,
-        paddingBottom: insets.bottom + additionalBottomPadding,
-        paddingLeft: isAndroid ? 0 : insets.left,
-        paddingRight: isAndroid ? 0 : insets.right,
+        paddingLeft: 0,
+        paddingRight: 0,
       },
       contentContainerStyle,
     ]);
-  }, [insets, headerHeight, additionalBottomPadding, contentContainerStyle]);
+  }, [contentContainerStyle]);
 
   const defaultItemSeparator = useCallback(() => {
     if (!platformLayout.useBorderBottom) return null;
@@ -46,9 +32,11 @@ function PlatformFlatListComponent<ItemT>(props: PlatformFlatListProps<ItemT>) {
   }, []);
 
   return (
-    <FlatList
-      style={computedStyle}
+    <SafeAreaFlatList
+      style={style}
       contentContainerStyle={computedContentContainerStyle}
+      headerHeight={headerHeight}
+      floatingButtonHeight={additionalBottomPadding}
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustKeyboardInsets
       ItemSeparatorComponent={ItemSeparatorComponent !== undefined ? ItemSeparatorComponent : defaultItemSeparator}

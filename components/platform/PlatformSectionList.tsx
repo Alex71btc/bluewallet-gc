@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { SectionListProps, StyleSheet, View, ViewStyle, DefaultSectionT, SectionListData, Text } from 'react-native';
 import PropTypes from 'prop-types';
 import { platformColors, platformSizing, platformLayout, isAndroid } from './utils';
@@ -30,16 +30,6 @@ function PlatformSectionListComponent<ItemT, SectionT = DefaultSectionT>(props: 
     ...restProps
   } = props;
 
-  const computedStyle = useMemo(() => {
-    return StyleSheet.flatten([
-      {
-        flex: 1,
-        backgroundColor: platformColors.background,
-      },
-      style,
-    ]);
-  }, [style]);
-
   const defaultSectionHeaderRenderer = useCallback(({ section }: { section: SectionWithTitle<ItemT, SectionT> }) => {
     if (!section.title) return null;
 
@@ -58,7 +48,7 @@ function PlatformSectionListComponent<ItemT, SectionT = DefaultSectionT>(props: 
 
   return (
     <SafeAreaSectionList
-      style={computedStyle}
+      style={style}
       contentContainerStyle={contentContainerStyle}
       headerHeight={headerHeight}
       floatingButtonHeight={additionalContentPadding}
