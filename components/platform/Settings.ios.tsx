@@ -1,174 +1,23 @@
-import React, { forwardRef } from 'react';
-import { FlatListProps, Platform, ScrollView, ScrollViewProps, StyleSheet, Text, TextProps, View, ViewProps } from 'react-native';
-import SafeAreaScrollView from '../SafeAreaScrollView';
-import SafeAreaFlatList from '../SafeAreaFlatList';
+import {
+  SettingsCard,
+  SettingsCardProps,
+  SettingsFlatList,
+  SettingsFlatListProps,
+  SettingsIconName,
+  SettingsListItemProps,
+  SettingsScrollView,
+  SettingsScrollViewProps,
+  SettingsSection,
+  SettingsSectionHeader,
+  SettingsSectionHeaderProps,
+  SettingsSectionProps,
+  SettingsSubtitle,
+  SettingsText,
+  createSettingsListItem,
+  getSettingsHeaderOptions,
+  getSettingsIconColor,
+} from './Settings.shared';
 import PlatformListItem from '../PlatformListItem';
-import { platformColors, platformLayout, platformSizing, isAndroid, isDarkMode } from './utils';
-
-export const getSettingsHeaderOptions = (title: string) => {
-  return {
-    title,
-    headerLargeTitle: Platform.OS === 'ios',
-    headerLargeTitleStyle:
-      Platform.OS === 'ios'
-        ? {
-            color: platformColors.text || '#000000',
-          }
-        : undefined,
-    headerTitleStyle: {
-      color: platformColors.text || '#000000',
-    },
-    headerBackButtonDisplayMode: 'minimal' as const,
-    headerBackTitle: '',
-    headerBackVisible: true,
-    headerTransparent: true,
-    headerBlurEffect: undefined,
-    headerStyle: {
-      backgroundColor: 'transparent',
-    },
-  };
-};
-
-export const SettingsText: React.FC<TextProps> = ({ style, ...rest }) => {
-  return <Text style={[styles.text, style]} {...rest} />;
-};
-
-export const SettingsSubtitle: React.FC<TextProps> = ({ style, ...rest }) => {
-  return <Text style={[styles.subtitle, style]} {...rest} />;
-};
-
-export interface SettingsSectionProps extends ViewProps {
-  compact?: boolean;
-}
-
-export const SettingsSection: React.FC<SettingsSectionProps> = ({ style, compact = false, ...rest }) => {
-  return <View style={[styles.section, compact && styles.sectionCompact, style]} {...rest} />;
-};
-
-export interface SettingsSectionHeaderProps extends ViewProps {
-  title: string;
-}
-
-export const SettingsSectionHeader: React.FC<SettingsSectionHeaderProps> = ({ title, style, ...rest }) => {
-  return (
-    <View style={[styles.sectionHeaderContainer, style]} {...rest}>
-      <Text style={styles.sectionHeaderText}>{title}</Text>
-    </View>
-  );
-};
-
-export interface SettingsCardProps extends ViewProps {
-  compact?: boolean;
-}
-
-export const SettingsCard: React.FC<SettingsCardProps> = ({ style, compact = false, ...rest }) => {
-  return <View style={[styles.card, compact && styles.cardCompact, style]} {...rest} />;
-};
-
-export interface SettingsScrollViewProps extends Omit<ScrollViewProps, 'contentContainerStyle'> {
-  contentContainerStyle?: ScrollViewProps['contentContainerStyle'];
-  headerHeight?: number;
-  floatingButtonHeight?: number;
-}
-
-export const SettingsScrollView = forwardRef<ScrollView, SettingsScrollViewProps>((props, ref) => {
-  const { contentContainerStyle, headerHeight, floatingButtonHeight, ...rest } = props;
-
-  return (
-    <SafeAreaScrollView
-      ref={ref}
-      headerHeight={headerHeight}
-      floatingButtonHeight={floatingButtonHeight}
-      contentContainerStyle={[styles.contentContainer, contentContainerStyle]}
-      {...rest}
-    />
-  );
-});
-
-SettingsScrollView.displayName = 'SettingsScrollView';
-
-export interface SettingsFlatListProps<ItemT> extends Omit<FlatListProps<ItemT>, 'contentContainerStyle'> {
-  contentContainerStyle?: FlatListProps<ItemT>['contentContainerStyle'];
-  headerHeight?: number;
-}
-
-export const SettingsFlatList = <ItemT,>(props: SettingsFlatListProps<ItemT>) => {
-  const { contentContainerStyle, headerHeight, ...rest } = props;
-
-  return (
-    <SafeAreaFlatList headerHeight={headerHeight} contentContainerStyle={[styles.contentContainer, contentContainerStyle]} {...rest} />
-  );
-};
-
-export type SettingsIconName =
-  | 'settings'
-  | 'currency'
-  | 'language'
-  | 'security'
-  | 'network'
-  | 'tools'
-  | 'about'
-  | 'privacy'
-  | 'notifications'
-  | 'lightning'
-  | 'blockExplorer'
-  | 'defaultView'
-  | 'electrum'
-  | 'licensing'
-  | 'releaseNotes'
-  | 'selfTest'
-  | 'performance'
-  | 'github'
-  | 'x'
-  | 'twitter'
-  | 'telegram'
-  | 'search'
-  | 'paperPlane'
-  | 'key';
-
-export type SettingsListItemPosition = 'single' | 'first' | 'middle' | 'last';
-
-type PlatformListItemProps = React.ComponentProps<typeof PlatformListItem>;
-
-export interface SettingsListItemProps extends Omit<PlatformListItemProps, 'containerStyle' | 'leftIcon' | 'bottomDivider'> {
-  iconName?: SettingsIconName;
-  leftIcon?: PlatformListItemProps['leftIcon'];
-  position?: SettingsListItemPosition;
-  spacingTop?: boolean;
-}
-
-const getIconColor = (name: SettingsIconName) => {
-  const dark = isDarkMode();
-
-  const colors: Record<SettingsIconName, string> = {
-    settings: dark ? '#FFFFFF' : '#5F6368',
-    currency: dark ? '#7EE0A4' : '#0F9D58',
-    language: dark ? '#FFD580' : '#F4B400',
-    security: dark ? '#FF8E8E' : '#DB4437',
-    network: dark ? '#82B1FF' : '#1A73E8',
-    tools: dark ? '#D0BCFF' : '#673AB7',
-    about: dark ? '#FFFFFF' : '#5F6368',
-    privacy: dark ? '#FFFFFF' : '#000000',
-    notifications: dark ? '#82B1FF' : '#1A73E8',
-    lightning: dark ? '#FFD580' : '#F4B400',
-    blockExplorer: dark ? '#82B1FF' : '#1A73E8',
-    defaultView: dark ? '#FFFFFF' : '#5F6368',
-    electrum: dark ? '#69F0AE' : '#0F9D58',
-    licensing: dark ? '#FFFFFF' : '#24292e',
-    releaseNotes: dark ? '#FFFFFF' : '#9AA0AA',
-    selfTest: dark ? '#FFFFFF' : '#FC0D44',
-    performance: dark ? '#FFFFFF' : '#FC0D44',
-    github: dark ? '#FFFFFF' : '#24292e',
-    x: dark ? '#FFFFFF' : '#1da1f2',
-    twitter: dark ? '#FFFFFF' : '#1da1f2',
-    telegram: dark ? '#FFFFFF' : '#0088cc',
-    search: dark ? '#82B1FF' : '#1A73E8',
-    paperPlane: dark ? '#82B1FF' : '#1A73E8',
-    key: dark ? '#69F0AE' : '#0F9D58',
-  };
-
-  return colors[name] ?? platformColors.secondaryText;
-};
 
 const iconNameMap: Record<SettingsIconName, string> = {
   settings: 'settings-outline',
@@ -213,100 +62,28 @@ const getIconProps = (name: SettingsIconName): PlatformListItemProps['leftIcon']
   return {
     name: iconNameMap[name] ?? 'settings-outline',
     type: 'ionicon',
-    color: getIconColor(name),
+    color: getSettingsIconColor(name),
     backgroundColor: iconBackgroundMap[name],
   };
 };
+type PlatformListItemProps = React.ComponentProps<typeof PlatformListItem>;
 
-const getContainerStyle = (position: SettingsListItemPosition, spacingTop?: boolean) => {
-  const isSingle = position === 'single';
-  const isFirst = position === 'first' || isSingle;
-  const isLast = position === 'last' || isSingle;
+export const SettingsListItem = createSettingsListItem(getIconProps);
 
-  return [
-    styles.listItemContainer,
-    isAndroid && styles.listItemContainerAndroid,
-    isFirst && styles.listItemFirst,
-    isLast && styles.listItemLast,
-    spacingTop && styles.listItemSpacingTop,
-  ];
+export {
+  SettingsCard,
+  SettingsCardProps,
+  SettingsFlatList,
+  SettingsFlatListProps,
+  SettingsIconName,
+  SettingsListItemProps,
+  SettingsScrollView,
+  SettingsScrollViewProps,
+  SettingsSection,
+  SettingsSectionHeader,
+  SettingsSectionHeaderProps,
+  SettingsSectionProps,
+  SettingsSubtitle,
+  SettingsText,
+  getSettingsHeaderOptions,
 };
-
-export const SettingsListItem: React.FC<SettingsListItemProps> = props => {
-  const { iconName, leftIcon, position = 'middle', spacingTop, ...rest } = props;
-  const resolvedIcon = leftIcon ?? (iconName ? getIconProps(iconName) : undefined);
-  const isSingle = position === 'single';
-  const isLast = position === 'last' || isSingle;
-
-  return (
-    <PlatformListItem
-      {...rest}
-      leftIcon={resolvedIcon}
-      containerStyle={getContainerStyle(position, spacingTop)}
-      bottomDivider={platformLayout.useBorderBottom && !isLast}
-      isFirst={position === 'first' || isSingle}
-      isLast={isLast}
-    />
-  );
-};
-
-const styles = StyleSheet.create({
-  contentContainer: {
-    paddingHorizontal: isAndroid ? 0 : platformSizing.horizontalPadding,
-  },
-  text: {
-    color: platformColors.text,
-    fontSize: platformSizing.titleFontSize,
-  },
-  subtitle: {
-    color: platformColors.secondaryText,
-    fontSize: platformSizing.subtitleFontSize,
-    marginTop: 5,
-  },
-  section: {
-    marginTop: isAndroid ? 16 : 8,
-    marginBottom: platformSizing.sectionSpacing / 2,
-    marginHorizontal: isAndroid ? 0 : platformSizing.horizontalPadding,
-  },
-  sectionCompact: {
-    marginTop: isAndroid ? 8 : 4,
-    marginBottom: 8,
-    marginHorizontal: isAndroid ? 0 : platformSizing.horizontalPadding,
-  },
-  sectionHeaderContainer: {
-    marginTop: platformSizing.sectionSpacing,
-    marginBottom: 8,
-    paddingHorizontal: platformSizing.horizontalPadding,
-  },
-  sectionHeaderText: {
-    fontSize: platformSizing.titleFontSize + 1,
-    fontWeight: 'bold',
-    color: platformColors.text,
-  },
-  card: {
-    backgroundColor: platformColors.card,
-    borderRadius: platformSizing.cardBorderRadius * 1.5,
-    padding: platformSizing.horizontalPadding,
-    ...(isAndroid && { elevation: 1 }),
-  },
-  cardCompact: {
-    padding: platformSizing.verticalPadding,
-  },
-  listItemContainer: {
-    backgroundColor: platformColors.card,
-  },
-  listItemContainerAndroid: {
-    minHeight: platformSizing.listItemMinHeight,
-  },
-  listItemFirst: {
-    borderTopLeftRadius: platformSizing.cardBorderRadius * 1.5,
-    borderTopRightRadius: platformSizing.cardBorderRadius * 1.5,
-  },
-  listItemLast: {
-    borderBottomLeftRadius: platformSizing.cardBorderRadius * 1.5,
-    borderBottomRightRadius: platformSizing.cardBorderRadius * 1.5,
-  },
-  listItemSpacingTop: {
-    marginTop: platformSizing.sectionSpacing,
-  },
-});
