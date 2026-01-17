@@ -7,7 +7,13 @@ export const getPlatformColor = (iosColor: string, androidColor: string): string
   return isIOS ? PlatformColor(iosColor) : androidColor;
 };
 
-export const isDarkMode = () => Appearance.getColorScheme() === 'dark';
+let cachedColorScheme = Appearance.getColorScheme();
+
+Appearance.addChangeListener(({ colorScheme }) => {
+  cachedColorScheme = colorScheme;
+});
+
+export const isDarkMode = () => cachedColorScheme === 'dark';
 
 export const platformColors = {
   get background() {
