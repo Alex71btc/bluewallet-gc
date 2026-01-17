@@ -262,7 +262,8 @@ const getContainerStyle = (position: SettingsListItemPosition, spacingTop?: bool
     styles.listItemContainer,
     isAndroid && styles.listItemContainerAndroid,
     isFirst && styles.listItemFirst,
-    isLast && styles.listItemLast,
+    !isAndroid && isFirst && styles.listItemFirst,
+    !isAndroid && isLast && styles.listItemLast,
     spacingTop && styles.listItemSpacingTop,
   ];
 };
@@ -300,35 +301,37 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: isAndroid ? 16 : 8,
-    marginBottom: platformSizing.sectionSpacing / 2,
+    marginBottom: isAndroid ? 8 : platformSizing.sectionSpacing / 2,
     marginHorizontal: isAndroid ? 0 : platformSizing.horizontalPadding,
   },
   sectionCompact: {
     marginTop: isAndroid ? 8 : 4,
-    marginBottom: 8,
+    marginBottom: isAndroid ? 6 : 8,
     marginHorizontal: isAndroid ? 0 : platformSizing.horizontalPadding,
   },
   sectionHeaderContainer: {
-    marginTop: platformSizing.sectionSpacing,
-    marginBottom: 8,
-    paddingHorizontal: platformSizing.horizontalPadding,
+    marginTop: isAndroid ? 12 : platformSizing.sectionSpacing,
+    marginBottom: isAndroid ? 4 : 8,
+    paddingHorizontal: isAndroid ? platformSizing.horizontalPadding : platformSizing.horizontalPadding,
   },
   sectionHeaderText: {
-    fontSize: platformSizing.titleFontSize + 1,
-    fontWeight: 'bold',
-    color: platformColors.text,
+    fontSize: isAndroid ? platformSizing.subtitleFontSize : platformSizing.subtitleFontSize - 1,
+    fontWeight: isAndroid ? '500' : '600',
+    color: platformColors.secondaryText,
   },
   card: {
-    backgroundColor: platformColors.card,
-    borderRadius: platformSizing.cardBorderRadius * 1.5,
-    padding: platformSizing.horizontalPadding,
-    ...(isAndroid && { elevation: 1 }),
+    backgroundColor: isAndroid ? platformColors.background : platformColors.card,
+    borderRadius: isAndroid ? 0 : platformSizing.cardBorderRadius * 1.5,
+    paddingHorizontal: platformSizing.horizontalPadding,
+    paddingVertical: isAndroid ? platformSizing.verticalPadding : platformSizing.horizontalPadding,
+    ...(isAndroid ? {} : { elevation: 1 }),
   },
   cardCompact: {
-    padding: platformSizing.verticalPadding,
+    paddingVertical: isAndroid ? platformSizing.verticalPadding : platformSizing.verticalPadding,
+    paddingHorizontal: platformSizing.horizontalPadding,
   },
   listItemContainer: {
-    backgroundColor: platformColors.card,
+    backgroundColor: isAndroid ? platformColors.background : platformColors.card,
   },
   listItemContainerAndroid: {
     minHeight: platformSizing.listItemMinHeight,
