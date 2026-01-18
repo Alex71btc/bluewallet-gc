@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { I18nManager, Linking, StyleSheet, TextInput, View, Pressable, AppState, Text } from 'react-native';
-import { Button as ButtonRNElements } from '@rneui/themed';
+import { Linking, StyleSheet, TextInput, View, Pressable, AppState, Text } from 'react-native';
 import {
   getDefaultUri,
   getPushToken,
@@ -24,7 +23,7 @@ import { useTheme } from '../../components/themes';
 import loc from '../../loc';
 import { openSettings } from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SettingsCard, SettingsFlatList, SettingsListItem, SettingsSubtitle, platformColors } from '../../components/platform';
+import { SettingsCard, SettingsFlatList, SettingsListItem, SettingsSubtitle, platformColors, platformSizing, isAndroid } from '../../components/platform';
 
 interface SettingItem {
   id: string;
@@ -54,7 +53,11 @@ const NotificationSettings: React.FC = () => {
 
   const styles = StyleSheet.create({
     card: {
-      marginVertical: 8,
+      marginVertical: isAndroid ? 8 : 0,
+    },
+    cardContent: {
+      paddingHorizontal: platformSizing.horizontalPadding,
+      paddingVertical: isAndroid ? 12 : 10,
     },
     multilineText: {
       color: platformColors.text,
@@ -73,7 +76,6 @@ const NotificationSettings: React.FC = () => {
       minHeight: 44,
       height: 44,
       alignItems: 'center',
-      borderRadius: 4,
       borderColor: colors.formBorder,
       borderBottomColor: colors.formBorder,
       backgroundColor: colors.inputBackgroundColor,
@@ -85,17 +87,13 @@ const NotificationSettings: React.FC = () => {
       minHeight: 36,
       height: 36,
     },
-    buttonStyle: {
-      backgroundColor: 'transparent',
-      flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row',
-    },
     divider: {
-      marginVertical: 16,
+      marginVertical: isAndroid ? 16 : 12,
       height: 0.5,
       backgroundColor: platformColors.separator,
     },
     sectionSpacing: {
-      height: 24,
+      height: isAndroid ? 24 : 12,
     },
   });
 
@@ -253,54 +251,54 @@ const NotificationSettings: React.FC = () => {
       <View>
         <View style={styles.divider} />
         <SettingsCard style={styles.card}>
-          <Pressable onPress={handleTap}>
-            <Text style={styles.multilineText}>{loc.settings.groundcontrol_explanation}</Text>
-          </Pressable>
+          <View style={styles.cardContent}>
+            <Pressable onPress={handleTap}>
+              <Text style={styles.multilineText}>{loc.settings.groundcontrol_explanation}</Text>
+            </Pressable>
+          </View>
         </SettingsCard>
 
-        <ButtonRNElements
-          icon={{
-            name: 'github',
-            type: 'font-awesome',
-            color: colors.foregroundColor,
-          }}
-          onPress={() => Linking.openURL('https://github.com/BlueWallet/GroundControl')}
-          titleStyle={{ color: colors.buttonAlternativeTextColor }}
+        <SettingsListItem
           title="github.com/BlueWallet/GroundControl"
-          color={colors.buttonTextColor}
-          buttonStyle={styles.buttonStyle}
+          iconName="github"
+          onPress={() => Linking.openURL('https://github.com/BlueWallet/GroundControl')}
+          chevron
+          position="single"
+          spacingTop
         />
 
         <SettingsCard style={styles.card}>
-          <View style={styles.uri}>
-            <TextInput
-              placeholder={getDefaultUri()}
-              value={URI}
-              onChangeText={setURI}
-              numberOfLines={1}
-              style={styles.uriText}
-              placeholderTextColor="#81868e"
-              editable={!isLoading}
-              textContentType="URL"
-              autoCapitalize="none"
-              underlineColorAndroid="transparent"
-            />
+          <View style={styles.cardContent}>
+            <View style={styles.uri}>
+              <TextInput
+                placeholder={getDefaultUri()}
+                value={URI}
+                onChangeText={setURI}
+                numberOfLines={1}
+                style={styles.uriText}
+                placeholderTextColor="#81868e"
+                editable={!isLoading}
+                textContentType="URL"
+                autoCapitalize="none"
+                underlineColorAndroid="transparent"
+              />
+            </View>
+
+            <BlueSpacing20 />
+            <Text style={styles.centered} onPress={() => setTapCount(tapCount + 1)}>
+              ♪ Ground Control to Major Tom ♪
+            </Text>
+            <Text style={styles.centered} onPress={() => setTapCount(tapCount + 1)}>
+              ♪ Commencing countdown, engines on ♪
+            </Text>
+
+            <View>
+              <CopyToClipboardButton stringToCopy={tokenInfo} displayText={tokenInfo} />
+            </View>
+
+            <BlueSpacing20 />
+            <Button onPress={save} title={loc.settings.save} />
           </View>
-
-          <BlueSpacing20 />
-          <Text style={styles.centered} onPress={() => setTapCount(tapCount + 1)}>
-            ♪ Ground Control to Major Tom ♪
-          </Text>
-          <Text style={styles.centered} onPress={() => setTapCount(tapCount + 1)}>
-            ♪ Commencing countdown, engines on ♪
-          </Text>
-
-          <View>
-            <CopyToClipboardButton stringToCopy={tokenInfo} displayText={tokenInfo} />
-          </View>
-
-          <BlueSpacing20 />
-          <Button onPress={save} title={loc.settings.save} />
         </SettingsCard>
       </View>
     );
@@ -342,8 +340,10 @@ const NotificationSettings: React.FC = () => {
         id: 'notificationsExplanation',
         title: '',
         customContent: (
-          <SettingsCard compact>
-            <SettingsSubtitle>{loc.settings.push_notifications_explanation}</SettingsSubtitle>
+          <SettingsCard compact style={!isAndroid ? { borderRadius: 0 } : undefined}>
+            <View style={styles.cardContent}>
+              <SettingsSubtitle>{loc.settings.push_notifications_explanation}</SettingsSubtitle>
+            </View>
           </SettingsCard>
         ),
         section: 1,
@@ -382,9 +382,10 @@ const NotificationSettings: React.FC = () => {
     (props: { item: SettingItem }) => {
       const item = props.item;
       const items = settingsItems();
+      const contentPadding = !isAndroid ? { paddingHorizontal: platformSizing.horizontalPadding } : undefined;
 
       if (item.customContent) {
-        return <>{item.customContent}</>;
+        return <View style={contentPadding}>{item.customContent}</View>;
       }
 
       const sectionItems = items.filter(i => i.section === item.section && !i.customContent);

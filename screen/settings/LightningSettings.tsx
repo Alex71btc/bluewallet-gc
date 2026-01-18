@@ -14,7 +14,7 @@ import { clearLNDHub, getLNDHub, setLNDHub } from '../../helpers/lndHub';
 import { DetailViewStackParamList } from '../../navigation/DetailViewStackParamList';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
 import AddressInput from '../../components/AddressInput';
-import { SettingsScrollView, SettingsCard, SettingsListItem, SettingsSubtitle } from '../../components/platform';
+import { SettingsScrollView, SettingsCard, SettingsListItem, SettingsSubtitle, platformSizing, isAndroid } from '../../components/platform';
 
 type LightingSettingsRouteProps = RouteProp<DetailViewStackParamList, 'LightningSettings'>;
 
@@ -24,15 +24,22 @@ const LightningSettings: React.FC = () => {
   const [URI, setURI] = useState<string>();
   const { setParams } = useExtendedNavigation();
   const styles = StyleSheet.create({
+    rowPadding: {
+      paddingHorizontal: platformSizing.horizontalPadding,
+    },
+    cardContent: {
+      paddingHorizontal: platformSizing.horizontalPadding,
+      paddingVertical: 12,
+    },
     inputContainer: {
-      marginTop: 16,
-      marginBottom: 16,
+      marginTop: isAndroid ? 16 : 12,
+      marginBottom: isAndroid ? 16 : 12,
     },
     buttonContainer: {
-      marginTop: 16,
+      marginTop: isAndroid ? 16 : 12,
     },
     githubContainer: {
-      marginTop: 16,
+      marginTop: isAndroid ? 16 : 12,
     },
     addressInput: {
       minHeight: 44,
@@ -122,34 +129,38 @@ const LightningSettings: React.FC = () => {
   return (
     <SettingsScrollView automaticallyAdjustContentInsets contentInsetAdjustmentBehavior="automatic">
       <SettingsCard>
-        <SettingsSubtitle>{loc.settings.lightning_settings_explain}</SettingsSubtitle>
-
-        <View style={styles.githubContainer}>
-          <SettingsListItem
-            title="GitHub Repository"
-            subtitle="github.com/BlueWallet/LndHub"
-            onPress={handleOpenGithub}
-            iconName="github"
-            position="single"
-          />
+        <View style={styles.cardContent}>
+          <SettingsSubtitle>{loc.settings.lightning_settings_explain}</SettingsSubtitle>
         </View>
       </SettingsCard>
 
-      <SettingsCard>
-        <View style={styles.inputContainer}>
-          <AddressInput
-            isLoading={isLoading}
-            address={URI}
-            placeholder={loc.formatString(loc.settings.lndhub_uri, { example: 'https://10.20.30.40:3000' })}
-            onChangeText={setLndhubURI}
-            testID="URIInput"
-            editable={!isLoading}
-            style={styles.addressInput}
-          />
-        </View>
+      <View style={[styles.rowPadding, styles.githubContainer]}>
+        <SettingsListItem
+          title="GitHub Repository"
+          subtitle="github.com/BlueWallet/LndHub"
+          onPress={handleOpenGithub}
+          iconName="github"
+          position="single"
+        />
+      </View>
 
-        <View style={styles.buttonContainer}>
-          {isLoading ? <BlueLoading /> : <Button testID="Save" onPress={save} title={loc.settings.save} />}
+      <SettingsCard>
+        <View style={styles.cardContent}>
+          <View style={styles.inputContainer}>
+            <AddressInput
+              isLoading={isLoading}
+              address={URI}
+              placeholder={loc.formatString(loc.settings.lndhub_uri, { example: 'https://10.20.30.40:3000' })}
+              onChangeText={setLndhubURI}
+              testID="URIInput"
+              editable={!isLoading}
+              style={styles.addressInput}
+            />
+          </View>
+
+          <View style={styles.buttonContainer}>
+            {isLoading ? <BlueLoading /> : <Button testID="Save" onPress={save} title={loc.settings.save} />}
+          </View>
         </View>
       </SettingsCard>
     </SettingsScrollView>

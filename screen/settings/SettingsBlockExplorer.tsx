@@ -141,15 +141,14 @@ const SettingsBlockExplorer: React.FC = () => {
 
   const renderItem = useCallback(
     ({ item, section, index }: SectionListRenderItemInfo<BlockExplorerItem, SectionData>) => {
-      const itemPadding = !isAndroid ? { paddingHorizontal: platformSizing.horizontalPadding } : undefined;
-
       if (section.title === loc._.suggested) {
         const explorer = item as BlockExplorer;
         const isSelected = !isCustomEnabled && normalizeUrl(selectedBlockExplorer.url || '') === normalizeUrl(explorer.url || '');
         const isFirst = index === 0;
         const isLast = index === section.data.length - 1;
+        const rowPadding = !isAndroid ? { paddingHorizontal: platformSizing.horizontalPadding } : undefined;
         return (
-          <View style={itemPadding}>
+          <View style={rowPadding}>
             <SettingsListItem
               title={explorer.name}
               onPress={() => handleExplorerPress(explorer)}
@@ -159,19 +158,18 @@ const SettingsBlockExplorer: React.FC = () => {
             />
           </View>
         );
-      } else {
-        return (
-            <SettingsBlockExplorerCustomUrlItem
-              isCustomEnabled={isCustomEnabled}
-              onSwitchToggle={handleCustomSwitchToggle}
-              customUrl={customUrl}
-              onCustomUrlChange={handleCustomUrlChange}
-              onSubmitCustomUrl={handleSubmitCustomUrl}
-              inputRef={customUrlInputRef}
-            />
-          
-        );
       }
+
+      return (
+        <SettingsBlockExplorerCustomUrlItem
+          isCustomEnabled={isCustomEnabled}
+          onSwitchToggle={handleCustomSwitchToggle}
+          customUrl={customUrl}
+          onCustomUrlChange={handleCustomUrlChange}
+          onSubmitCustomUrl={handleSubmitCustomUrl}
+          inputRef={customUrlInputRef}
+        />
+      );
     },
     [
       selectedBlockExplorer,
@@ -201,11 +199,7 @@ const SettingsBlockExplorer: React.FC = () => {
       }
       renderItem={renderItem}
       renderSectionHeader={renderSectionHeader}
-      ignoreTopInset
-      contentInsetAdjustmentBehavior="automatic"
-      automaticallyAdjustContentInsets
-      contentContainerStyle={{ paddingHorizontal: platformSizing.horizontalPadding }}
-      style={styles.root}
+ 
     />
   );
 };

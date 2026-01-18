@@ -1,5 +1,17 @@
-import React, { forwardRef } from 'react';
-import { FlatListProps, Platform, ScrollView, ScrollViewProps, StyleSheet, Text, TextProps, View, ViewProps } from 'react-native';
+import React, { forwardRef, useMemo } from 'react';
+import {
+  FlatListProps,
+  Platform,
+  ScrollView,
+  ScrollViewProps,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextProps,
+  View,
+  ViewProps,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SafeAreaScrollView from '../SafeAreaScrollView';
 import SafeAreaFlatList from '../SafeAreaFlatList';
 import PlatformListItem from '../PlatformListItem';
@@ -29,12 +41,21 @@ export const getSettingsHeaderOptions = (title: string) => {
   };
 };
 
+const getSettingsHeaderHeight = (insetsTop?: number) => {
+  if (Platform.OS !== 'android') {
+    return 0;
+  }
+
+  const statusBarHeight = StatusBar.currentHeight ?? insetsTop ?? 24;
+  return 56 + statusBarHeight;
+};
+
 export const SettingsText: React.FC<TextProps> = ({ style, ...rest }) => {
-  return <Text style={[styles.text, style]} {...rest} />;
+  return <Text accessibilityRole="text" style={[styles.text, style]} {...rest} />;
 };
 
 export const SettingsSubtitle: React.FC<TextProps> = ({ style, ...rest }) => {
-  return <Text style={[styles.subtitle, style]} {...rest} />;
+  return <Text accessibilityRole="text" style={[styles.subtitle, style]} {...rest} />;
 };
 
 export interface SettingsSectionProps extends ViewProps {
@@ -51,7 +72,7 @@ export interface SettingsSectionHeaderProps extends ViewProps {
 
 export const SettingsSectionHeader: React.FC<SettingsSectionHeaderProps> = ({ title, style, ...rest }) => {
   return (
-    <View style={[styles.sectionHeaderContainer, style]} {...rest}>
+    <View accessibilityRole="header" accessibilityLabel={title} style={[styles.sectionHeaderContainer, style]} {...rest}>
       <Text style={styles.sectionHeaderText}>{title}</Text>
     </View>
   );
@@ -73,11 +94,15 @@ export interface SettingsScrollViewProps extends Omit<ScrollViewProps, 'contentC
 
 export const SettingsScrollView = forwardRef<ScrollView, SettingsScrollViewProps>((props, ref) => {
   const { contentContainerStyle, headerHeight, floatingButtonHeight, ...rest } = props;
+  const insets = useSafeAreaInsets();
+  const resolvedHeaderHeight = useMemo(() => {
+    return headerHeight ?? getSettingsHeaderHeight(insets.top);
+  }, [headerHeight, insets.top]);
 
   return (
     <SafeAreaScrollView
       ref={ref}
-      headerHeight={headerHeight}
+      headerHeight={resolvedHeaderHeight}
       floatingButtonHeight={floatingButtonHeight}
       contentContainerStyle={[styles.contentContainer, contentContainerStyle]}
       {...rest}
@@ -94,9 +119,17 @@ export interface SettingsFlatListProps<ItemT> extends Omit<FlatListProps<ItemT>,
 
 export const SettingsFlatList = <ItemT,>(props: SettingsFlatListProps<ItemT>) => {
   const { contentContainerStyle, headerHeight, ...rest } = props;
+  const insets = useSafeAreaInsets();
+  const resolvedHeaderHeight = useMemo(() => {
+    return headerHeight ?? getSettingsHeaderHeight(insets.top);
+  }, [headerHeight, insets.top]);
 
   return (
-    <SafeAreaFlatList headerHeight={headerHeight} contentContainerStyle={[styles.contentContainer, contentContainerStyle]} {...rest} />
+    <SafeAreaFlatList
+      headerHeight={resolvedHeaderHeight}
+      contentContainerStyle={[styles.contentContainer, contentContainerStyle]}
+      {...rest}
+    />
   );
 };
 
@@ -219,8 +252,8 @@ const androidIconNameMap: Record<SettingsIconName, string> = {
   about: 'info',
   privacy: 'lock',
   notifications: 'notifications',
-  lightning: 'bolt',
-  blockExplorer: 'travel-explore',
+  lightning: 'flash-on',
+  blockExplorer: 'search',
   defaultView: 'view-list',
   electrum: 'storage',
   licensing: 'verified-user',
@@ -260,23 +293,49 @@ const getContainerStyle = (position: SettingsListItemPosition, spacingTop?: bool
 
   return [
     styles.listItemContainer,
+    styles.listItemNoGap,
     isAndroid && styles.listItemContainerAndroid,
-    isFirst && styles.listItemFirst,
     !isAndroid && isFirst && styles.listItemFirst,
     !isAndroid && isLast && styles.listItemLast,
     spacingTop && styles.listItemSpacingTop,
   ];
 };
 
+const getTextFromNode = (node: React.ReactNode): string => {
+  if (node === null || node === undefined || typeof node === 'boolean') {
+    return '';
+  }
+
+  if (typeof node === 'string' || typeof node === 'number') {
+    return String(node);
+  }
+
+  if (Array.isArray(node)) {
+    return node.map(getTextFromNode).filter(Boolean).join(' ');
+  }
+
+  if (React.isValidElement(node)) {
+    return getTextFromNode(node.props?.children);
+  }
+
+  return '';
+};
+
 export const SettingsListItem: React.FC<SettingsListItemProps> = props => {
-  const { iconName, leftIcon, position = 'middle', spacingTop, ...rest } = props;
+  const { iconName, leftIcon, position = 'middle', spacingTop, accessibilityLabel, accessibilityHint, subtitle, title, ...rest } = props;
   const resolvedIcon = leftIcon ?? (iconName ? getIconProps(iconName) : undefined);
   const isSingle = position === 'single';
   const isLast = position === 'last' || isSingle;
+  const resolvedAccessibilityHint = accessibilityHint ?? getTextFromNode(subtitle);
+  const resolvedAccessibilityLabel = accessibilityLabel ?? title;
 
   return (
     <PlatformListItem
       {...rest}
+      title={title}
+      subtitle={subtitle}
+      accessibilityLabel={resolvedAccessibilityLabel}
+      accessibilityHint={resolvedAccessibilityHint || undefined}
       leftIcon={resolvedIcon}
       containerStyle={getContainerStyle(position, spacingTop)}
       bottomDivider={platformLayout.useBorderBottom && !isLast}
@@ -288,7 +347,7 @@ export const SettingsListItem: React.FC<SettingsListItemProps> = props => {
 
 const styles = StyleSheet.create({
   contentContainer: {
-    paddingHorizontal: isAndroid ? 0 : platformSizing.horizontalPadding,
+    paddingHorizontal: 0,
   },
   text: {
     color: platformColors.text,
@@ -297,41 +356,45 @@ const styles = StyleSheet.create({
   subtitle: {
     color: platformColors.secondaryText,
     fontSize: platformSizing.subtitleFontSize,
-    marginTop: 5,
+    marginTop: isAndroid ? 5 : 2,
   },
   section: {
     marginTop: isAndroid ? 16 : 8,
-    marginBottom: isAndroid ? 8 : platformSizing.sectionSpacing / 2,
+    marginBottom: platformSizing.sectionSpacing / 2,
     marginHorizontal: isAndroid ? 0 : platformSizing.horizontalPadding,
   },
   sectionCompact: {
     marginTop: isAndroid ? 8 : 4,
-    marginBottom: isAndroid ? 6 : 8,
+    marginBottom: 8,
     marginHorizontal: isAndroid ? 0 : platformSizing.horizontalPadding,
   },
   sectionHeaderContainer: {
-    marginTop: isAndroid ? 12 : platformSizing.sectionSpacing,
-    marginBottom: isAndroid ? 4 : 8,
-    paddingHorizontal: isAndroid ? platformSizing.horizontalPadding : platformSizing.horizontalPadding,
+    marginTop: platformSizing.sectionSpacing,
+    marginBottom: 8,
+    paddingHorizontal: platformSizing.horizontalPadding,
   },
   sectionHeaderText: {
-    fontSize: isAndroid ? platformSizing.subtitleFontSize : platformSizing.subtitleFontSize - 1,
-    fontWeight: isAndroid ? '500' : '600',
+    fontSize: isAndroid ? platformSizing.subtitleFontSize : 13,
+    fontWeight: isAndroid ? '500' : '400',
     color: platformColors.secondaryText,
   },
   card: {
     backgroundColor: isAndroid ? platformColors.background : platformColors.card,
-    borderRadius: isAndroid ? 0 : platformSizing.cardBorderRadius * 1.5,
-    paddingHorizontal: platformSizing.horizontalPadding,
-    paddingVertical: isAndroid ? platformSizing.verticalPadding : platformSizing.horizontalPadding,
+    borderRadius: isAndroid ? 0 : platformSizing.cardBorderRadius,
+    paddingHorizontal: isAndroid ? platformSizing.horizontalPadding : 0,
+    paddingVertical: isAndroid ? platformSizing.verticalPadding : 0,
+    overflow: isAndroid ? 'visible' : 'hidden',
     ...(isAndroid ? {} : { elevation: 1 }),
   },
   cardCompact: {
-    paddingVertical: isAndroid ? platformSizing.verticalPadding : platformSizing.verticalPadding,
-    paddingHorizontal: platformSizing.horizontalPadding,
+    paddingVertical: isAndroid ? platformSizing.verticalPadding : 0,
+    paddingHorizontal: isAndroid ? platformSizing.horizontalPadding : 0,
   },
   listItemContainer: {
     backgroundColor: isAndroid ? platformColors.background : platformColors.card,
+  },
+  listItemNoGap: {
+    marginVertical: 0,
   },
   listItemContainerAndroid: {
     minHeight: platformSizing.listItemMinHeight,
@@ -345,6 +408,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: platformSizing.cardBorderRadius * 1.5,
   },
   listItemSpacingTop: {
-    marginTop: platformSizing.sectionSpacing,
+    marginTop: isAndroid ? platformSizing.sectionSpacing : 12,
   },
 });
