@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { I18nManager, Linking, StyleSheet, TextInput, View, Pressable, AppState, Text, Platform, StatusBar } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useCallback, useEffect, useState } from 'react';
+import { I18nManager, Linking, StyleSheet, TextInput, View, Pressable, AppState, Text } from 'react-native';
 import { Button as ButtonRNElements } from '@rneui/themed';
 import {
   getDefaultUri,
@@ -47,18 +46,7 @@ interface SettingItem {
 const NotificationSettings: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isNotificationsEnabledState, setNotificationsEnabledState] = useState<boolean | undefined>(undefined);
-  const insets = useSafeAreaInsets();
 
-  // Calculate header height for Android with transparent header
-  // Standard Android header is 56dp + status bar height
-  // For older Android versions, use a fallback if StatusBar.currentHeight is not available
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android') {
-      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24; // Fallback to 24dp for older Android
-      return 56 + statusBarHeight;
-    }
-    return 0;
-  }, [insets.top]);
   const [tokenInfo, setTokenInfo] = useState('<empty>');
   const [URI, setURI] = useState<string | undefined>();
   const [tapCount, setTapCount] = useState(0);
@@ -437,11 +425,10 @@ const NotificationSettings: React.FC = () => {
     [settingsItems],
   );
 
-  const keyExtractor = useCallback((item: SettingItem) => item.id, []);
+  const keyExtractor = useCallback((item: SettingItem, index: number) => `${item.id}-${index}`, []);
 
   return (
     <SettingsFlatList
-      headerHeight={headerHeight}
       data={settingsItems()}
       renderItem={renderItem}
       keyExtractor={keyExtractor}

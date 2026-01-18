@@ -1,7 +1,3 @@
-export { PlatformScrollView } from './PlatformScrollView';
-export { PlatformFlatList } from './PlatformFlatList';
-export { PlatformSectionList } from './PlatformSectionList';
-
 export {
   SettingsScrollView,
   SettingsFlatList,

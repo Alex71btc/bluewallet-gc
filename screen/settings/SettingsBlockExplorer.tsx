@@ -1,8 +1,8 @@
-import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { StyleSheet, TextInput, SectionListRenderItemInfo, SectionListData, LayoutAnimation, Platform, StatusBar } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
+import { StyleSheet, TextInput, SectionListRenderItemInfo, SectionListData, LayoutAnimation, View } from 'react-native';
 import loc from '../../loc';
-import { PlatformSectionList, SettingsListItem, SettingsSectionHeader } from '../../components/platform';
+import { SettingsListItem, SettingsSectionHeader, platformSizing, isAndroid } from '../../components/platform';
+import SafeAreaSectionList from '../../components/SafeAreaSectionList';
 import {
   getBlockExplorersList,
   BlockExplorer,
@@ -29,27 +29,16 @@ const SettingsBlockExplorer: React.FC = () => {
   const [customUrl, setCustomUrl] = useState<string>(selectedBlockExplorer.key === 'custom' ? selectedBlockExplorer.url : '');
   const [isCustomEnabled, setIsCustomEnabled] = useState<boolean>(selectedBlockExplorer.key === 'custom');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const insets = useSafeAreaInsets();
-
-  // Calculate header height for Android with transparent header
-  // Standard Android header is 56dp + status bar height
-  // For older Android versions, use a fallback if StatusBar.currentHeight is not available
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android') {
-      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24; // Fallback to 24dp for older Android
-      return 56 + statusBarHeight;
-    }
-    return 0;
-  }, [insets.top]);
-
   const predefinedExplorers = getBlockExplorersList().filter(explorer => explorer.key !== 'custom');
 
   const sections: SectionData[] = [
     {
+      key: 'suggested',
       title: loc._.suggested,
       data: predefinedExplorers,
     },
     {
+      key: 'advanced',
       title: loc.wallets.details_advanced,
       data: ['custom'],
     },
@@ -152,30 +141,35 @@ const SettingsBlockExplorer: React.FC = () => {
 
   const renderItem = useCallback(
     ({ item, section, index }: SectionListRenderItemInfo<BlockExplorerItem, SectionData>) => {
+      const itemPadding = !isAndroid ? { paddingHorizontal: platformSizing.horizontalPadding } : undefined;
+
       if (section.title === loc._.suggested) {
         const explorer = item as BlockExplorer;
         const isSelected = !isCustomEnabled && normalizeUrl(selectedBlockExplorer.url || '') === normalizeUrl(explorer.url || '');
         const isFirst = index === 0;
         const isLast = index === section.data.length - 1;
         return (
-          <SettingsListItem
-            title={explorer.name}
-            onPress={() => handleExplorerPress(explorer)}
-            checkmark={isSelected}
-            disabled={isCustomEnabled}
-            position={isFirst && isLast ? 'single' : isFirst ? 'first' : isLast ? 'last' : 'middle'}
-          />
+          <View style={itemPadding}>
+            <SettingsListItem
+              title={explorer.name}
+              onPress={() => handleExplorerPress(explorer)}
+              checkmark={isSelected}
+              disabled={isCustomEnabled}
+              position={isFirst && isLast ? 'single' : isFirst ? 'first' : isLast ? 'last' : 'middle'}
+            />
+          </View>
         );
       } else {
         return (
-          <SettingsBlockExplorerCustomUrlItem
-            isCustomEnabled={isCustomEnabled}
-            onSwitchToggle={handleCustomSwitchToggle}
-            customUrl={customUrl}
-            onCustomUrlChange={handleCustomUrlChange}
-            onSubmitCustomUrl={handleSubmitCustomUrl}
-            inputRef={customUrlInputRef}
-          />
+            <SettingsBlockExplorerCustomUrlItem
+              isCustomEnabled={isCustomEnabled}
+              onSwitchToggle={handleCustomSwitchToggle}
+              customUrl={customUrl}
+              onCustomUrlChange={handleCustomUrlChange}
+              onSubmitCustomUrl={handleSubmitCustomUrl}
+              inputRef={customUrlInputRef}
+            />
+          
         );
       }
     },
@@ -200,22 +194,18 @@ const SettingsBlockExplorer: React.FC = () => {
   }, []);
 
   return (
-    <PlatformSectionList<BlockExplorerItem, SectionData>
+    <SafeAreaSectionList<BlockExplorerItem, SectionData>
       sections={sections}
-      keyExtractor={(item: BlockExplorerItem, index: number) => {
-        if (typeof item === 'string') {
-          return `custom-${index}`;
-        } else {
-          return item.key;
-        }
-      }}
+      keyExtractor={(item: BlockExplorerItem, index: number) =>
+        typeof item === 'string' ? `custom-${index}` : `explorer-${item.key}`
+      }
       renderItem={renderItem}
       renderSectionHeader={renderSectionHeader}
+      ignoreTopInset
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustContentInsets
+      contentContainerStyle={{ paddingHorizontal: platformSizing.horizontalPadding }}
       style={styles.root}
-      stickySectionHeadersEnabled={false}
-      headerHeight={headerHeight}
     />
   );
 };

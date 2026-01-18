@@ -1,6 +1,5 @@
 import React, { useMemo, useLayoutEffect, useCallback } from 'react';
-import { View, StyleSheet, Platform, StatusBar, Linking, Image } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View, StyleSheet, Linking, Image } from 'react-native';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
 import loc from '../../loc';
 import { SettingsScrollView, SettingsSection, SettingsListItem, getSettingsHeaderOptions } from '../../components/platform';
@@ -9,19 +8,6 @@ import { useSettings } from '../../hooks/context/useSettings';
 const Settings = () => {
   const { navigate, setOptions } = useExtendedNavigation();
   const { language } = useSettings(); // Subscribe to language changes to trigger re-render
-  const insets = useSafeAreaInsets();
-
-  // Calculate header height for Android with transparent header
-  // Standard Android header is 56dp + status bar height
-  // For older Android versions, use a fallback if StatusBar.currentHeight is not available
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android') {
-      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24; // Fallback to 24dp for older Android
-      return 56 + statusBarHeight;
-    }
-    return 0;
-  }, [insets.top]);
-
   useLayoutEffect(() => {
     setOptions(getSettingsHeaderOptions(loc.settings.header));
   }, [setOptions, language]); // Include language to trigger re-render when language changes
@@ -50,7 +36,7 @@ const Settings = () => {
   );
 
   return (
-    <SettingsScrollView testID="SettingsRoot" headerHeight={headerHeight}>
+    <SettingsScrollView testID="SettingsRoot">
       <SettingsSection compact>
         <SettingsListItem
           title="Donate"

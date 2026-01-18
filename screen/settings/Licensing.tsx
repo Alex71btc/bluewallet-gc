@@ -1,22 +1,10 @@
-import React, { useMemo } from 'react';
-import { Platform, StatusBar } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React from 'react';
 import { BlueSpacing20 } from '../../components/BlueSpacing';
 import { SettingsScrollView, SettingsCard, SettingsText } from '../../components/platform';
 
 const Licensing = () => {
-  const insets = useSafeAreaInsets();
-
-  // Calculate header height for Android with transparent header
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android' && insets.top > 0) {
-      return 56 + (StatusBar.currentHeight || insets.top);
-    }
-    return 0;
-  }, [insets.top]);
-
   return (
-    <SettingsScrollView headerHeight={headerHeight}>
+    <SettingsScrollView>
       <SettingsCard>
         <SettingsText>MIT License</SettingsText>
         <BlueSpacing20 />

@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { Platform, View, ListRenderItem, StatusBar } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Platform, View, ListRenderItem } from 'react-native';
 import { openSettings } from 'react-native-permissions';
 import A from '../../blue_modules/analytics';
 import loc from '../../loc';
@@ -37,18 +36,7 @@ interface SettingItem {
 
 const GeneralSettings: React.FC = () => {
   const { wallets, isStorageEncrypted } = useStorage();
-  const insets = useSafeAreaInsets();
 
-  // Calculate header height for Android with transparent header
-  // Standard Android header is 56dp + status bar height
-  // For older Android versions, use a fallback if StatusBar.currentHeight is not available
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android') {
-      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24; // Fallback to 24dp for older Android
-      return 56 + statusBarHeight;
-    }
-    return 0;
-  }, [insets.top]);
   const {
     isDoNotTrackEnabled,
     setDoNotTrackStorage,
@@ -282,7 +270,6 @@ const GeneralSettings: React.FC = () => {
       id: 'privacySystemSettings',
       title: loc.settings.privacy_system_settings,
       subtitle: '',
-      chevron: true,
       onPress: openApplicationSettings,
       testID: 'PrivacySystemSettings',
       showItem: true,
@@ -382,7 +369,7 @@ const GeneralSettings: React.FC = () => {
     [settingsItems],
   );
 
-  const keyExtractor = useCallback((item: SettingItem) => item.id, []);
+  const keyExtractor = useCallback((item: SettingItem, index: number) => `${item.id}-${index}`, []);
 
   return (
     <SettingsFlatList
@@ -393,7 +380,6 @@ const GeneralSettings: React.FC = () => {
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustContentInsets
       removeClippedSubviews
-      headerHeight={headerHeight}
     />
   );
 };

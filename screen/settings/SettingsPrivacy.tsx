@@ -304,7 +304,7 @@ const SettingsPrivacy: React.FC = () => {
     [settingsItems],
   );
 
-  const keyExtractor = useCallback((item: SettingItem) => item.id, []);
+  const keyExtractor = useCallback((item: SettingItem, index: number) => `${item.id}-${index}`, []);
 
   return (
     <SettingsFlatList

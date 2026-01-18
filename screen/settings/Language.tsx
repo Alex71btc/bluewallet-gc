@@ -1,6 +1,5 @@
-import React, { useLayoutEffect, useState, useCallback, useMemo } from 'react';
-import { Keyboard, NativeSyntheticEvent, Platform, StatusBar } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useLayoutEffect, useState, useCallback } from 'react';
+import { Keyboard, NativeSyntheticEvent } from 'react-native';
 import presentAlert from '../../components/Alert';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
 import loc from '../../loc';
@@ -12,17 +11,6 @@ const Language = () => {
   const { setLanguageStorage, language } = useSettings();
   const { setOptions } = useExtendedNavigation();
   const [search, setSearch] = useState('');
-  const insets = useSafeAreaInsets();
-
-  // Calculate header height for Android with transparent header
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android') {
-      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24; // Fallback to 24dp for older Android
-      return 56 + statusBarHeight;
-    }
-    return 0;
-  }, [insets.top]);
-
   // Set header options - navigation stack already handles transparent header,
   // we just need to configure the search bar and ensure title is updated when language changes
   useLayoutEffect(() => {
@@ -75,7 +63,6 @@ const Language = () => {
   return (
     <SettingsFlatList
       testID="LanguageFlatList"
-      headerHeight={headerHeight}
       data={filteredLanguages}
       renderItem={renderItem}
       keyExtractor={keyExtractor}

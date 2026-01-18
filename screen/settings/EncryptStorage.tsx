@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
-import { Alert, Platform, View, StatusBar, ListRenderItemInfo } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useCallback, useEffect, useReducer, useRef } from 'react';
+import { Alert, Platform, View, ListRenderItemInfo } from 'react-native';
 import { unlockWithBiometrics, useBiometrics } from '../../hooks/useBiometrics';
 import loc from '../../loc';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
@@ -81,17 +80,6 @@ const EncryptStorage = () => {
   const { isDeviceBiometricCapable, biometricEnabled, setBiometricUseEnabled, deviceBiometricType } = useBiometrics();
   const [state, dispatch] = useReducer(reducer, initialState);
   const navigation = useExtendedNavigation();
-  const insets = useSafeAreaInsets();
-
-  // Calculate header height for Android with transparent header
-  // For older Android versions, use a fallback if StatusBar.currentHeight is not available
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android') {
-      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24; // Fallback to 24dp for older Android
-      return 56 + statusBarHeight;
-    }
-    return 0;
-  }, [insets.top]);
 
   const promptRef = useRef<PromptPasswordConfirmationModalHandle>(null);
 
@@ -102,10 +90,6 @@ const EncryptStorage = () => {
     dispatch({ type: ActionType.SetDeviceBiometricCapable, payload: isDeviceBiometricCapableSync });
     dispatch({ type: ActionType.SetLoading, payload: false });
   }, [isStorageEncrypted, isDeviceBiometricCapable]);
-
-  useEffect(() => {
-    initializeState();
-  }, [initializeState]);
 
   // Present modal when modalType changes to CREATE_PASSWORD
   useEffect(() => {
@@ -308,13 +292,12 @@ const EncryptStorage = () => {
     [settingsItems],
   );
 
-  const keyExtractor = useCallback((item: SettingItem) => item.id, []);
+  const keyExtractor = useCallback((item: SettingItem, index: number) => `${item.id}-${index}`, []);
 
   return (
     <>
       <SettingsFlatList
         testID="EncryptStorageScrollView"
-        headerHeight={headerHeight}
         data={settingsItems()}
         renderItem={renderItem}
         keyExtractor={keyExtractor}

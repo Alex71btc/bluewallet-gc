@@ -1,6 +1,5 @@
-import React, { useMemo } from 'react';
-import { Platform, StatusBar } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React from 'react';
+import { Platform } from 'react-native';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
 import loc from '../../loc';
 import { SettingsScrollView, SettingsSection, SettingsListItem } from '../../components/platform';
@@ -8,19 +7,6 @@ import { SettingsScrollView, SettingsSection, SettingsListItem } from '../../com
 const NetworkSettings: React.FC = () => {
   const navigation = useExtendedNavigation();
   const isNotificationsCapable = Platform.OS !== 'web';
-  const insets = useSafeAreaInsets();
-
-  // Calculate header height for Android with transparent header
-  // Standard Android header is 56dp + status bar height
-  // For older Android versions, use a fallback if StatusBar.currentHeight is not available
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android') {
-      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24; // Fallback to 24dp for older Android
-      return 56 + statusBarHeight;
-    }
-    return 0;
-  }, [insets.top]);
-
   const navigateToElectrumSettings = () => {
     navigation.navigate('ElectrumSettings');
   };
@@ -38,7 +24,7 @@ const NetworkSettings: React.FC = () => {
   };
 
   return (
-    <SettingsScrollView headerHeight={headerHeight}>
+    <SettingsScrollView>
       <SettingsSection>
         <SettingsListItem
           title={loc.settings.block_explorer}

@@ -1,6 +1,5 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { Keyboard, TextInput, View, ScrollView, TouchableOpacity, Text, StyleSheet, Platform, StatusBar } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useRef, useState, useEffect } from 'react';
+import { Keyboard, TextInput, View, ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import Button from '../../components/Button';
 import { BlueButtonLink } from '../../BlueComponents';
 import { BlueSpacing10, BlueSpacing20 } from '../../components/BlueSpacing';
@@ -24,16 +23,6 @@ const IsItMyAddress: React.FC = () => {
   const theme = useTheme();
   const scrollViewRef = useRef<ScrollView>(null);
   const firstWalletRef = useRef<View>(null);
-  const insets = useSafeAreaInsets();
-
-  // Calculate header height for Android with transparent header
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android' && insets.top > 0) {
-      return 56 + (StatusBar.currentHeight || insets.top);
-    }
-    return 0;
-  }, [insets.top]);
-
   const [address, setAddress] = useState<string>('');
   const [matchingWallets, setMatchingWallets] = useState<TWallet[] | undefined>();
   const [resultCleanAddress, setResultCleanAddress] = useState<string | undefined>();
@@ -198,7 +187,6 @@ const IsItMyAddress: React.FC = () => {
       automaticallyAdjustContentInsets
       automaticallyAdjustKeyboardInsets
       contentInsetAdjustmentBehavior="automatic"
-      headerHeight={headerHeight}
     >
       <SettingsCard>
         <View style={localStyles.textInputContainer}>

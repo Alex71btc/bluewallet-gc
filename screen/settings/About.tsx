@@ -1,7 +1,6 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { Alert, Image, Linking, Platform, Text, TouchableOpacity, useWindowDimensions, View, StyleSheet, StatusBar } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Alert, Image, Linking, Platform, Text, TouchableOpacity, useWindowDimensions, View, StyleSheet } from 'react-native';
 import { getApplicationName, getBuildNumber, getBundleId, getUniqueIdSync, getVersion, hasGmsSync } from 'react-native-device-info';
 import Rate, { AndroidMarket } from 'react-native-rate';
 import Icon from 'react-native-vector-icons/FontAwesome5';
@@ -49,19 +48,6 @@ const About: React.FC = () => {
   const { width, height } = useWindowDimensions();
   const { isElectrumDisabled } = useSettings();
   const colors = platformColors;
-  const insets = useSafeAreaInsets();
-
-  // Calculate header height for Android with transparent header
-  // Standard Android header is 56dp + status bar height
-  // For older Android versions, use a fallback if StatusBar.currentHeight is not available
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android') {
-      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24; // Fallback to 24dp for older Android
-      return 56 + statusBarHeight;
-    }
-    return 0;
-  }, [insets.top]);
-
   const localStyles = StyleSheet.create({
     sectionSpacing: {
       height: 16,
@@ -381,7 +367,7 @@ const About: React.FC = () => {
     [aboutItems],
   );
 
-  const keyExtractor = useCallback((item: AboutItem) => item.id, []);
+  const keyExtractor = useCallback((item: AboutItem, index: number) => `${item.id}-${index}`, []);
 
   const ListFooterComponent = useCallback(() => <View style={localStyles.sectionSpacing} />, [localStyles.sectionSpacing]);
 
@@ -395,7 +381,6 @@ const About: React.FC = () => {
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustContentInsets
       removeClippedSubviews
-      headerHeight={headerHeight}
     />
   );
 };

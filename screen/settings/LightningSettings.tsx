@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { Alert, Linking, StyleSheet, View, Platform, StatusBar } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Alert, Linking, StyleSheet, View } from 'react-native';
 import DefaultPreference from 'react-native-default-preference';
 import { BlueLoading } from '../../components/BlueLoading';
 import DeeplinkSchemaMatch from '../../class/deeplink-schema-match';
@@ -24,19 +23,6 @@ const LightningSettings: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [URI, setURI] = useState<string>();
   const { setParams } = useExtendedNavigation();
-  const insets = useSafeAreaInsets();
-
-  // Calculate header height for Android with transparent header
-  // Standard Android header is 56dp + status bar height
-  // For older Android versions, use a fallback if StatusBar.currentHeight is not available
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android') {
-      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24; // Fallback to 24dp for older Android
-      return 56 + statusBarHeight;
-    }
-    return 0;
-  }, [insets.top]);
-
   const styles = StyleSheet.create({
     inputContainer: {
       marginTop: 16,
@@ -134,7 +120,7 @@ const LightningSettings: React.FC = () => {
   };
 
   return (
-    <SettingsScrollView automaticallyAdjustContentInsets contentInsetAdjustmentBehavior="automatic" headerHeight={headerHeight}>
+    <SettingsScrollView automaticallyAdjustContentInsets contentInsetAdjustmentBehavior="automatic">
       <SettingsCard>
         <SettingsSubtitle>{loc.settings.lightning_settings_explain}</SettingsSubtitle>
 

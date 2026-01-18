@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Alert, Keyboard, LayoutAnimation, Platform, StatusBar, StyleSheet, Switch, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Alert, Keyboard, LayoutAnimation, Platform, StyleSheet, Switch, TextInput, View } from 'react-native';
 import * as BlueElectrum from '../../blue_modules/BlueElectrum';
 import triggerHapticFeedback, { HapticFeedbackTypes, triggerSelectionHapticFeedback } from '../../blue_modules/hapticFeedback';
 import { BlueCard, BlueText } from '../../BlueComponents';
@@ -46,7 +45,6 @@ const ElectrumSettings: React.FC = () => {
   const params = useRoute<RouteProps>().params;
   const { server } = params;
   const navigation = useExtendedNavigation();
-  const insets = useSafeAreaInsets();
   const [isLoading, setIsLoading] = useState(true);
   const [serverHistory, setServerHistory] = useState<Set<ElectrumServerItem>>(new Set());
   const [config, setConfig] = useState<{ connected?: number; host?: string; port?: string }>({});
@@ -62,15 +60,6 @@ const ElectrumSettings: React.FC = () => {
     tcp: '',
     ssl: '',
   });
-
-  // Calculate header height for Android with transparent header
-  const headerHeight = useMemo(() => {
-    if (Platform.OS === 'android') {
-      const statusBarHeight = StatusBar.currentHeight ?? insets.top ?? 24;
-      return 56 + statusBarHeight;
-    }
-    return 0;
-  }, [insets.top]);
 
   const stylesHook = StyleSheet.create({
     inputWrap: {
@@ -619,7 +608,6 @@ const ElectrumSettings: React.FC = () => {
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustKeyboardInsets
       testID="ElectrumSettingsScrollView"
-      headerHeight={headerHeight}
     >
       <ListItem
         Component={PressableWrapper}
