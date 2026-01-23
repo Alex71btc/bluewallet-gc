@@ -101,3 +101,11 @@ fastlane/report.xml
 android/app/google-services.json
 *.WORKING
 *.bak.*
+# Android signing
+android/app/keystores/
+android/gradle.properties
+
+# Env / secrets
+.env
+*.keystore
+firebase-key.json
