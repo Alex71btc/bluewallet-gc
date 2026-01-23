@@ -26,6 +26,7 @@ export type DetailViewStackParamList = {
   WalletDetails: { walletID: string };
   TransactionDetails: { tx: Transaction; hash: string; walletID: string };
   TransactionStatus: { hash: string; walletID?: string };
+  GroundControlDebug: undefined;
   CPFP: {
     wallet: TWallet | null;
     txid: string;

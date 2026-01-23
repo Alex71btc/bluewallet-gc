@@ -1,3 +1,4 @@
+import GroundControlDebug from '../components/GroundControlDebug';
 import { createNativeStackNavigator, NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import React, { lazy, Suspense } from 'react';
 import UnlockWith from '../screen/UnlockWith';
@@ -160,6 +161,17 @@ const MainRoot = () => {
             })(theme)}
           />
           <DetailViewStack.Screen
+             name="GroundControlDebug"
+             component={GroundControlDebug}
+             options={navigationStyle({
+               headerBackVisible: false,
+               title: 'GroundControl Debug',
+               presentation: 'modal',
+               headerShown: true,
+               closeButtonPosition: CloseButtonPosition.Right,
+             })(theme)}
+          />
+           <DetailViewStack.Screen
             name="SignVerifyRoot"
             component={LazySignVerifyStackRoot}
             options={{ ...NavigationDefaultOptions, ...StatusBarLightOptions }}

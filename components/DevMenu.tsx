@@ -1,3 +1,4 @@
+import { navigationRef } from '../NavigationService';
 import React, { useEffect } from 'react';
 import { DevSettings, Alert, Platform, AlertButton } from 'react-native';
 import { useStorage } from '../hooks/context/useStorage';
@@ -87,6 +88,15 @@ const DevMenu: React.FC = () => {
 
         Clipboard.setString(wallet.getSecret());
         Alert.alert('New Wallet created!', `Wallet secret copied to clipboard.\nLabel: ${label}`);
+      });
+
+      DevSettings.addMenuItem('GroundControl Debug', () => {
+        try {
+          // navigationRef is a ref object; current holds the navigator
+          (navigationRef as any).current?.navigate('GroundControlDebug');
+        } catch (e) {
+          Alert.alert('Navigation error', String(e));
+        }
       });
 
       DevSettings.addMenuItem('Copy Wallet Secret', () => {

@@ -96,3 +96,8 @@ android/app/.classpath
 android/app/.project
 fastlane/README.md
 fastlane/report.xml
+
+# local / secrets
+android/app/google-services.json
+*.WORKING
+*.bak.*
