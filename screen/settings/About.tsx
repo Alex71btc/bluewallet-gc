@@ -1,8 +1,7 @@
 import Clipboard from '@react-native-clipboard/clipboard';
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Alert, Image, Linking, Platform, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { getApplicationName, getBuildNumber, getBundleId, getUniqueIdSync, getVersion, hasGmsSync } from 'react-native-device-info';
-import RateApp, { AndroidMarket } from 'react-native-rate-app';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
 import A from '../../blue_modules/analytics';
@@ -66,24 +65,58 @@ const About: React.FC = () => {
     Linking.openURL('https://github.com/BlueWallet/BlueWallet');
   }, []);
 
+  /**
+   * Replacement for react-native-rate-app:
+   * opens Play Store (market://) or falls back to web URL.
+   */
   const handleOnRatePress = useCallback(async () => {
-    const storeOptions = {
-      iOSAppId: '1376878040',
-      androidPackageName: 'io.bluewallet.bluewallet',
-      androidMarket: AndroidMarket.GOOGLE,
-    };
-
     try {
-      const inAppSuccess = await RateApp.requestReview({ androidMarket: AndroidMarket.GOOGLE });
-      if (!inAppSuccess) {
-        await RateApp.openStoreForReview(storeOptions);
+      const bundleId = getBundleId();
+      const marketUrl = `market://details?id=${bundleId}`;
+      const webUrl = `https://play.google.com/store/apps/details?id=${bundleId}`;
+
+      const canOpenMarket = await Linking.canOpenURL(marketUrl);
+      await Linking.openURL(canOpenMarket ? marketUrl : webUrl);
+    } catch (e) {
+      console.warn('handleOnRatePress failed', e);
+    }
+  }, []);
+
+  /**
+   * 10x tap Easteregg on the logo.
+   * For now: shows an Alert (no navigation, so it can't crash).
+   * Later you can plug your GroundControl URL UI in here.
+   */
+  const logoTapCountRef = useRef(0);
+  const logoTapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleOnLogoPress = useCallback(() => {
+    logoTapCountRef.current += 1;
+
+    if (logoTapTimerRef.current) clearTimeout(logoTapTimerRef.current);
+    logoTapTimerRef.current = setTimeout(() => {
+      logoTapCountRef.current = 0;
+    }, 1200);
+
+    if (logoTapCountRef.current >= 10) {
+      logoTapCountRef.current = 0;
+      if (logoTapTimerRef.current) {
+        clearTimeout(logoTapTimerRef.current);
+        logoTapTimerRef.current = null;
       }
-    } catch (error) {
-      try {
-        await RateApp.openStoreForReview(storeOptions);
-      } catch (openError) {
-        console.error('Rate app failed.', openError);
-      }
+
+Alert.alert(
+  'Developer',
+  'Open Notification Settings (GroundControl).',
+  [
+    { text: 'Cancel', style: 'cancel' },
+    {
+      text: 'Open',
+      onPress: () => navigate('NotificationSettings'),
+    },
+  ],
+  { cancelable: true },
+);
     }
   }, []);
 
@@ -113,11 +146,15 @@ const About: React.FC = () => {
           <SettingsSection compact>
             <SettingsCard style={[styles.card, styles.headerCard]}>
               <View style={styles.center}>
-                <Image style={styles.logo} source={require('../../img/bluebeast.png')} />
+                <TouchableOpacity accessibilityRole="button" onPress={handleOnLogoPress} activeOpacity={0.8}>
+                  <Image style={styles.logo} source={require('../../img/bluebeast.png')} />
+                </TouchableOpacity>
+
                 <Text style={[styles.textFree, { color: colors.foregroundColor }]}>{loc.settings.about_free}</Text>
                 <Text style={[styles.textBackup, { color: colors.alternativeTextColor }]}>
                   {formatStringAddTwoWhiteSpaces(loc.settings.about_backup)}
                 </Text>
+
                 {((Platform.OS === 'android' && hasGmsSync()) || Platform.OS !== 'android') && (
                   <View style={styles.headerButton}>
                     <Button onPress={handleOnRatePress} title={loc.settings.about_review + ' ⭐🙏'} />
@@ -223,6 +260,7 @@ const About: React.FC = () => {
               w, h = {width}, {height}
             </Text>
             <Text style={[styles.footerText, { color: colors.alternativeTextColor }]}>Unique ID: {getUniqueIdSync()}</Text>
+
             <View style={styles.copyToClipboard}>
               <TouchableOpacity
                 accessibilityRole="button"
@@ -235,17 +273,20 @@ const About: React.FC = () => {
                 <Text style={[styles.copyToClipboardText, { color: colors.foregroundColor }]}>{loc.transactions.details_copy}</Text>
               </TouchableOpacity>
             </View>
+
             <BlueSpacing20 />
           </View>
         ),
         section: 4,
       },
     ];
+
     return items;
   }, [
     colors.foregroundColor,
     colors.alternativeTextColor,
     handleOnRatePress,
+    handleOnLogoPress,
     handleOnXPress,
     handleOnTelegramPress,
     handleOnGithubPress,
@@ -284,7 +325,6 @@ const About: React.FC = () => {
   );
 
   const keyExtractor = useCallback((item: AboutItem, index: number) => `${item.id}-${index}`, []);
-
   const ListFooterComponent = useCallback(() => <View style={styles.sectionSpacing} />, []);
 
   return (
