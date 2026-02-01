@@ -195,69 +195,101 @@ const NotificationSettings: React.FC = () => {
   }, [URI]);
 
   const renderDeveloperSettings = useCallback(() => {
-    if (tapCount < 10) return null;
+    // This area is ALWAYS rendered, and unlocks dev settings after 10 taps.
+    const onUnlockTap = () => {
+      setTapCount(c => {
+        const next = c + 1;
+        // Optional tiny hint when unlocked:
+        if (next === 10) {
+          presentAlert({ message: 'Developer settings unlocked' });
+        }
+        return next;
+      });
+    };
 
     return (
       <View>
         <View style={[styles.divider, { backgroundColor: colors.lightBorder ?? colors.borderTopColor }]} />
+
+        {/* Always-visible tap area (like original UX): tap 10x to unlock */}
         <SettingsCard style={styles.card}>
           <View style={styles.cardContent}>
-            <Pressable onPress={handleTap}>
-              <Text style={[styles.multilineText, { color: colors.foregroundColor }]}>{loc.settings.groundcontrol_explanation}</Text>
+            <Pressable onPress={onUnlockTap}>
+              <Text style={[styles.multilineText, { color: colors.foregroundColor }]}>
+                {loc.settings.groundcontrol_explanation}
+              </Text>
             </Pressable>
+
+            {/* Optional: show progress while locked (helps you confirm taps are counted) */}
+            {tapCount < 10 && (
+              <Text style={[styles.centered, { color: colors.alternativeTextColor, marginTop: 8 }]}>
+                Developer: tap here {10 - tapCount} more time{10 - tapCount === 1 ? '' : 's'}
+              </Text>
+            )}
           </View>
         </SettingsCard>
 
-        <SettingsListItem
-          title="github.com/BlueWallet/GroundControl"
-          iconName="github"
-          onPress={() => Linking.openURL('https://github.com/BlueWallet/GroundControl')}
-          chevron
-          position="single"
-          spacingTop
-        />
+        {/* Only show dev stuff after unlock */}
+        {tapCount >= 10 && (
+          <View>
+            <SettingsListItem
+              title="github.com/BlueWallet/GroundControl"
+              iconName="github"
+              onPress={() => Linking.openURL('https://github.com/BlueWallet/GroundControl')}
+              chevron
+              position="single"
+              spacingTop
+            />
 
-        <SettingsCard style={styles.card}>
-          <View style={styles.cardContent}>
-            <View
-              style={[
-                styles.uri,
-                { borderColor: colors.formBorder, borderBottomColor: colors.formBorder, backgroundColor: colors.inputBackgroundColor },
-              ]}
-            >
-              <TextInput
-                placeholder={getDefaultUri()}
-                value={URI}
-                onChangeText={setURI}
-                numberOfLines={1}
-                style={[styles.uriText, { color: colors.alternativeTextColor }]}
-                placeholderTextColor="#81868e"
-                editable={!isLoading}
-                textContentType="URL"
-                autoCapitalize="none"
-                underlineColorAndroid="transparent"
-              />
-            </View>
+            <SettingsCard style={styles.card}>
+              <View style={styles.cardContent}>
+                <View
+                  style={[
+                    styles.uri,
+                    {
+                      borderColor: colors.formBorder,
+                      borderBottomColor: colors.formBorder,
+                      backgroundColor: colors.inputBackgroundColor,
+                    },
+                  ]}
+                >
+                  <TextInput
+                    placeholder={getDefaultUri()}
+                    value={URI}
+                    onChangeText={setURI}
+                    numberOfLines={1}
+                    style={[styles.uriText, { color: colors.alternativeTextColor }]}
+                    placeholderTextColor="#81868e"
+                    editable={!isLoading}
+                    textContentType="URL"
+                    autoCapitalize="none"
+                    underlineColorAndroid="transparent"
+                  />
+                </View>
 
-            <BlueSpacing20 />
-            <Text style={[styles.centered, { color: colors.foregroundColor }]} onPress={() => setTapCount(tapCount + 1)}>
-              ♪ Ground Control to Major Tom ♪
-            </Text>
-            <Text style={[styles.centered, { color: colors.foregroundColor }]} onPress={() => setTapCount(tapCount + 1)}>
-              ♪ Commencing countdown, engines on ♪
-            </Text>
+                <BlueSpacing20 />
 
-            <View>
-              <CopyToClipboardButton stringToCopy={tokenInfo} displayText={tokenInfo} />
-            </View>
+                {/* Keep the fun lines, but make them robust too */}
+                <Text style={[styles.centered, { color: colors.foregroundColor }]} onPress={() => setTapCount(c => c + 1)}>
+                  ♪ Ground Control to Major Tom ♪
+                </Text>
+                <Text style={[styles.centered, { color: colors.foregroundColor }]} onPress={() => setTapCount(c => c + 1)}>
+                  ♪ Commencing countdown, engines on ♪
+                </Text>
 
-            <BlueSpacing20 />
-            <Button onPress={save} title={loc.settings.save} />
+                <View>
+                  <CopyToClipboardButton stringToCopy={tokenInfo} displayText={tokenInfo} />
+                </View>
+
+                <BlueSpacing20 />
+                <Button onPress={save} title={loc.settings.save} />
+              </View>
+            </SettingsCard>
           </View>
-        </SettingsCard>
+        )}
       </View>
     );
-  }, [tapCount, colors, isLoading, URI, tokenInfo, save]);
+  }, [tapCount, colors, isLoading, URI, tokenInfo, save, setURI, presentAlert]);
 
   const settingsItems = useCallback((): SettingItem[] => {
     const items: SettingItem[] = [
