@@ -27,11 +27,6 @@ The fork adds:
 - Token auto-cleanup for uninstalled apps
 ### GroundControl Server & Documentation
 
-This app is designed to work with a **self-hosted GroundControl server**.
-
-**GroundControl repository (server):**  
-https://github.com/Alex71btc/GroundControl
-
 The repository contains full documentation on how to build, configure and run
 your own GroundControl instance, including:
 
