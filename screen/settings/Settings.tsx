@@ -44,7 +44,7 @@ const Settings = () => {
         <SettingsListItem
           title={loc.settings.general}
           iconName="settings"
-          onPress={() => navigate('GeneralSettings')}
+          onPress={() => navigate('General')}
           testID="GeneralSettings"
           chevron
           position="first"
