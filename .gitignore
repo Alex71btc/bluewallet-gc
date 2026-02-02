@@ -96,3 +96,11 @@ android/app/.classpath
 android/app/.project
 fastlane/README.md
 fastlane/report.xml
+ # signing / local secrets
+android/app/*.jks
+android/app/*.keystore
+*.jks
+*.keystore
+google-services.json
+android/local.properties
+
