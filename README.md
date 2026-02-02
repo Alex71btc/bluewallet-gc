@@ -1,11 +1,10 @@
- ## Self-hosted GroundControl + Push (FCM) – Quickstart
+## Self-hosted GroundControl + Push (FCM) – Quickstart
 
 This fork is a BlueWallet Android build that can use a fully self-hosted GroundControl server.
 Goal: self-hosted push notifications + maximum privacy/control (no dependency on official BlueWallet backends).
-This setup was tested end-to-end with:
-- Android release APK (signed)
-- Local GroundControl (Node.js + MariaDB)
-- Custom Firebase project (FCM)
+
+Self-hosted push pipeline (unconfirmed/received/confirmed) confirmed working with our GroundControl fork.
+
 
 ### Components
 - **Android app (this repo)**: React Native build
@@ -18,33 +17,14 @@ This setup was tested end-to-end with:
 - JDK 17 (recommended for modern AGP)
 - Node.js + yarn/npm as required by the repo
 
-## Backend: Self-hosted GroundControl
-
-This app is designed to work with a self-hosted GroundControl server:
-
-👉 https://github.com/Alex71btc/GroundControl
-
-👉 **GroundControl fork (server):**
-https://github.com/Alex71btc/GroundControl
-
-The fork adds:
-- Fully self-hosted push notifications (FCM)
-- Separate push tags for:
-  - unconfirmed
-  - received
-  - confirmed transactions
-- Token auto-cleanup for uninstalled apps
-
 ### App: Configure GroundControl URL
 In the app:
 1. Settings → **Network** → **Notifications** (GroundControl)
 2. Tap the hidden “Major Tom” text 10× (Developer section appears)
 3. Enter your GroundControl URL (example: `http://<LAN-IP>:3000`) and Save
 
-
 ### Release build (signed APK)
 This repo supports local release signing via Gradle properties.
-
 
 **Keystore** (example path):
 `~/.keystores/bluewallet-gc.jks`
@@ -56,7 +36,8 @@ RELEASE_STORE_FILE=/home/<user>/.keystores/bluewallet-gc.jks
 RELEASE_STORE_PASSWORD=...
 RELEASE_KEY_ALIAS=bluewallet-gc
 RELEASE_KEY_PASSWORD=...
- Build:
+
+Build:
 
 cd android
 ./gradlew clean
@@ -74,7 +55,6 @@ Notes
 Keep secrets out of git (google-services.json, keystore, Gradle props, .env).
 
 Push notifications are expected to work with a self-hosted GroundControl when the server is configured with your Firebase service account.
-
 # BlueWallet - A Bitcoin & Lightning Wallet
 
 [![GitHub tag](https://img.shields.io/badge/dynamic/json.svg?url=https://raw.githubusercontent.com/BlueWallet/BlueWallet/master/package.json&query=$.version&label=Version)](https://github.com/BlueWallet/BlueWallet)
