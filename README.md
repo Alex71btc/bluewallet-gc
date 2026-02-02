@@ -10,6 +10,21 @@ Self-hosted push pipeline (unconfirmed/received/confirmed) confirmed working wit
 - **Android app (this repo)**: React Native build
 - **GroundControl (server repo)**: Node.js/TypeScript + MariaDB
 - **Firebase (FCM)**: own Firebase project + service account key (server-side)
+## Backend: Self-hosted GroundControl
+
+This app is designed to work with a self-hosted GroundControl server:
+
+**GroundControl fork (server):**
+https://github.com/Alex71btc/GroundControl
+
+The fork adds:
+
+- Fully self-hosted push notifications (FCM)
+- Separate push tags for:
+- unconfirmed
+- received
+- confirmed transactions
+- Token auto-cleanup for uninstalled apps
 
 ### Prerequisites (Android)
 - Ubuntu 24.04
