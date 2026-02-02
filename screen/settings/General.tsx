@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
 import loc from '../../loc';
@@ -35,16 +35,12 @@ const General: React.FC = () => {
     }
   }, []);
 
-  const goOnLaunch = useCallback(() => {
-    // In manchen BlueWallet-Versionen heißt der Screen anders.
-    // Wir versuchen zuerst "OnLaunch" – falls es bei dir anders heißt, ändern wir das gleich.
-    try {
-      // @ts-ignore
-      navigate('OnLaunch');
-    } catch (e) {
-      Alert.alert('On Launch', 'Screen route "OnLaunch" not found. We need to wire this to the correct route name in your repo.');
-    }
-  }, [navigate]);
+const goOnLaunch = useCallback(() => {
+  Alert.alert(
+    'On Launch',
+    'This screen is currently not exposed in this build.',
+  );
+}, []);
 
   const goPrivacy = useCallback(() => {
     // Dein bisheriger "GeneralSettings" entspricht im Original der "Privacy"-Unterseite.
