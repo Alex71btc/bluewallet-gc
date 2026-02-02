@@ -25,6 +25,28 @@ The fork adds:
 - received
 - confirmed transactions
 - Token auto-cleanup for uninstalled apps
+### GroundControl Server & Documentation
+
+This app is designed to work with a **self-hosted GroundControl server**.
+
+**GroundControl repository (server):**  
+https://github.com/Alex71btc/GroundControl
+
+The repository contains full documentation on how to build, configure and run
+your own GroundControl instance, including:
+
+- Installation & build instructions
+- Environment variables
+- Database setup
+- Firebase service account (server-side FCM)
+- Push notification flow
+- Token lifecycle & cleanup
+
+📖 **Start here:**  
+https://github.com/Alex71btc/GroundControl/tree/master/docs
+
+The documentation is intentionally kept in the server repository to clearly
+separate **app-side** and **server-side** responsibilities.
 
 ### Prerequisites (Android)
 - Ubuntu 24.04
