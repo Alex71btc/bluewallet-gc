@@ -324,11 +324,7 @@ const DetailViewStackScreensStack = () => {
         component={About}
         options={navigationStyle(getSettingsHeaderOptions(loc.settings.about))(theme)}
       />
-      {/* <DetailViewStack.Screen
-        name="DefaultView"
-        component={DefaultView}
-        options={navigationStyle(getSettingsHeaderOptions(loc.settings.default_title))(theme)}
-      /> */}
+
       <DetailViewStack.Screen
         name="ElectrumSettings"
         component={ElectrumSettings}
