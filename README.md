@@ -32,6 +32,31 @@ The fork adds:
 - JDK 17 (recommended for modern AGP)
 - Node.js + yarn/npm as required by the repo
 
+### Firebase (Android): google-services.json (DO NOT COMMIT)
+
+Push notifications use Firebase Cloud Messaging (FCM).  
+To build the Android app with your own Firebase project you must provide a local `google-services.json`.
+
+1) Create / open your Firebase project in the Firebase Console.
+
+2) Add an **Android app** to the project:
+   - **Package name** must match the app's `applicationId` (see `android/app/build.gradle`).
+   - (Optional) Add SHA-1 / SHA-256 fingerprints if you use features that require it.
+
+3) Download **google-services.json** from Firebase and place it here:
+
+   `android/app/google-services.json`
+
+4) **Never commit** this file. It must stay local.
+   This repo ignores it via `.gitignore`:
+   - `android/app/google-services.json`
+   - `android/app/google-services.json.local`
+
+Notes:
+- `google-services.json` contains project identifiers and API keys.
+  Treat it as sensitive and keep it out of Git history.
+- Server-side FCM for GroundControl is configured separately (Firebase service account key on the server).
+
 ### App: Configure GroundControl URL
 In the app:
 1. Settings → **Network** → **Notifications** (GroundControl)
