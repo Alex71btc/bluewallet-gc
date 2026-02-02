@@ -20,7 +20,9 @@ This setup was tested end-to-end with:
 
 ## Backend: Self-hosted GroundControl
 
-This app is designed to work with a self-hosted GroundControl server.
+This app is designed to work with a self-hosted GroundControl server:
+
+👉 https://github.com/Alex71btc/GroundControl
 
 👉 **GroundControl fork (server):**
 https://github.com/Alex71btc/GroundControl

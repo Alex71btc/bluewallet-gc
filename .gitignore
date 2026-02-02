@@ -104,3 +104,12 @@ android/app/*.keystore
 google-services.json
 android/local.properties
 
+
+# secrets / local config
+android/app/google-services.json
+android/app/google-services.json.local
+# never commit keystores
+*.keystore
+*.jks
+android/keystores/
+android/reproducible.keystore
