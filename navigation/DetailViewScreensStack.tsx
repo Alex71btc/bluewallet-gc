@@ -31,6 +31,7 @@ import { useSettings } from '../hooks/context/useSettings';
 import { useStorage } from '../hooks/context/useStorage';
 import WalletTransactions from '../screen/wallets/WalletTransactions';
 import AddWalletButton from '../components/AddWalletButton';
+import General from '../screen/settings/General';
 import Settings from '../screen/settings/Settings';
 import Currency from '../screen/settings/Currency';
 import GeneralSettings from '../screen/settings/GeneralSettings';
@@ -282,7 +283,12 @@ const DetailViewStackScreensStack = () => {
           animationTypeForReplace: 'push',
         })(theme)}
       />
-      <DetailViewStack.Screen
+    <DetailViewStack.Screen
+  name="General"
+  component={General}
+  options={navigationStyle(getSettingsHeaderOptions(loc.settings.general))(theme)}
+/>
+  <DetailViewStack.Screen
         name="Currency"
         component={Currency}
         options={navigationStyle(getSettingsHeaderOptions(loc.settings.currency))(theme)}
