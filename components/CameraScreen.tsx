@@ -44,8 +44,6 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
   };
 
   // Counter-rotate the icons to indicate the actual orientation of the captured photo.
-  // For this example, it'll behave incorrectly since UI orientation is allowed (and already-counter rotates the entire screen)
-  // For real phone apps, lock your UI orientation using a library like 'react-native-orientation-locker'
   const rotateUi = true;
   const uiRotation = orientationAnim.interpolate({
     inputRange: [1, 2, 3, 4],
@@ -97,7 +95,6 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
 
   return (
     <View style={styles.screen}>
-      {/* Render top buttons only if not desktop as they would not be relevant */}
       {!isDesktop && (
         <View style={styles.topButtons}>
           <TouchableOpacity style={[styles.topButton, uiRotationStyle, torchMode ? styles.activeTorch : {}]} onPress={onSetTorch}>
@@ -109,6 +106,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
               )}
             </Animated.View>
           </TouchableOpacity>
+
           <View style={styles.rightButtonsContainer}>
             {showImagePickerButton && (
               <TouchableOpacity
@@ -137,6 +135,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           </View>
         </View>
       )}
+
       <View style={styles.cameraContainer}>
         <Camera
           ref={cameraRef}
@@ -146,17 +145,27 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           resizeMode="cover"
           onReadCode={handleReadCode}
           torchMode={torchMode ? 'on' : 'off'}
-          resetFocusWhenMotionDetected
+
+          // ✅ WICHTIG: bei rotierenden Animated-QRs bremst Motion-Focus-Reset häufig extrem
+          resetFocusWhenMotionDetected={false}
+
+          // ✅ WICHTIG: Animated QR braucht viele Frames / Sekunde
+          // Manche no-google Forks haben die Prop, aber die TS-Typen fehlen.
+          // @ts-ignore
+          scanThrottleDelay={0}  // testweise 0; wenn zu "nervös", nimm 30 oder 50
+
           zoom={zoom}
           onZoom={handleZoom}
           maxZoom={10}
           onOrientationChange={handleOrientationChange}
         />
       </View>
+
       <View style={styles.bottomButtons}>
         <TouchableOpacity onPress={onCancelButtonPress}>
           <Animated.Text style={[styles.backTextStyle, uiRotationStyle]}>{loc._.cancel}</Animated.Text>
         </TouchableOpacity>
+
         {isDesktop ? (
           <View style={styles.rightButtonsContainer}>
             {showImagePickerButton && (
@@ -218,50 +227,40 @@ const styles = StyleSheet.create({
   },
   topButton: {
     backgroundColor: '#222',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 30,
+    padding: 10,
   },
   topButtonImg: {
-    margin: 10,
-    width: 24,
-    height: 24,
-  },
-  cameraContainer: {
-    justifyContent: 'center',
-    flex: 1,
-  },
-  cameraPreview: {
-    width: '100%',
-    height: '100%',
-  },
-  bottomButtons: {
-    padding: 10,
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  backTextStyle: {
-    padding: 10,
-    color: 'white',
-    fontSize: 20,
+    justifyContent: 'center',
   },
   rightButtonsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  bottomButton: {
-    backgroundColor: '#222',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
+  spacing: {
     marginLeft: 10,
   },
-  spacing: {
-    marginLeft: 20,
+  cameraContainer: {
+    flex: 1,
+  },
+  cameraPreview: {
+    flex: 1,
+  },
+  bottomButtons: {
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  bottomButton: {
+    backgroundColor: '#222',
+    borderRadius: 30,
+    padding: 10,
+  },
+  backTextStyle: {
+    color: '#fff',
+    fontSize: 18,
+    padding: 10,
   },
 });

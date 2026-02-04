@@ -73,13 +73,21 @@ const Confirm: React.FC = () => {
   const { isBiometricUseCapableAndEnabled } = useBiometrics();
   const navigation = useExtendedNavigation<ConfirmNavigationProp>();
   const route = useRoute<ConfirmRouteProp>(); // Get the route and its params
-  const { recipients, targets, walletID, fee, memo, tx, satoshiPerByte, psbt, payjoinUrl } = route.params; // Destructure params
-
+  const { recipients, targets, walletID, fee, memo, tx, satoshiPerByte, psbtBase64, payjoinUrl } = route.params;
   const [state, dispatch] = useReducer(reducer, initialState);
   const { navigate, setOptions, goBack } = navigation;
   const wallet = wallets.find((w: TWallet) => w.getID() === walletID) as TWallet;
   const feeSatoshi = new BigNumber(fee).multipliedBy(100000000).toNumber();
   const { colors } = useTheme();
+  const psbt = useMemo(() => {
+    if (!psbtBase64) return undefined;
+    try {
+      return bitcoin.Psbt.fromBase64(psbtBase64);
+    } catch (e) {
+      console.warn('Confirm: failed to parse psbtBase64', e);
+      return undefined;
+    }
+  }, [psbtBase64]);
 
   useEffect(() => {
     if (!wallet) {
@@ -195,7 +203,11 @@ const Confirm: React.FC = () => {
           return;
         }
       } else {
-        const payJoinWallet = new PayjoinTransaction(psbt, (txHex: string) => broadcastTransaction(txHex), wallet as HDSegwitBech32Wallet);
+if (!psbt) {
+  throw new Error('Payjoin enabled, but PSBT is missing (psbtBase64 not provided).');
+}
+
+const payJoinWallet = new PayjoinTransaction(psbt, (txHex: string) => broadcastTransaction(txHex), wallet as HDSegwitBech32Wallet);
         const paymentScript = getPaymentScript();
         if (!paymentScript) {
           throw new Error('Invalid payment script');

@@ -661,17 +661,54 @@ const SendDetails = () => {
       recipients = outputs;
     }
 
-    navigation.navigate('Confirm', {
-      fee: new BigNumber(fee).dividedBy(100000000).toNumber(),
-      memo: transactionMemo,
-      walletID: wallet.getID(),
-      tx: tx.toHex(),
-      targets: targetsOrig,
-      recipients,
-      satoshiPerByte: requestedSatPerByte,
-      payjoinUrl,
-      psbt,
-    });
+// helper: make sure navigation params are serializable (no BigInt, no class instances)
+// make navigation params serializable (React Navigation requirement)
+const recipientsSerializable = recipients.map(r => ({
+  ...r,
+  value: typeof (r as any).value === 'object' ? Number((r as any).value) : (r as any).value,
+}));
+
+const _navNumber = (v: any): any => {
+  if (typeof v === 'number') return v;
+  if (typeof v === 'bigint') return Number(v);
+  if (typeof v === 'string') {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : v;
+  }
+  if (v && typeof v === 'object') {
+    // BigNumber (bignumber.js) etc.
+    if (typeof (v as any).toNumber === 'function') return (v as any).toNumber();
+    if (typeof (v as any).toString === 'function') {
+      const s = (v as any).toString();
+      const n = Number(s);
+      if (Number.isFinite(n)) return n;
+    }
+  }
+  return v;
+};
+
+const _sanitizeRecipients = (arr: any[]) =>
+  (arr || []).map(r => ({
+    ...r,
+    value: _navNumber((r as any).value),
+    amount: _navNumber((r as any).amount), // just in case some code uses amount
+  }));
+
+const recipientsForNav = _sanitizeRecipients(recipients);
+const targetsForNav = _sanitizeRecipients(targetsOrig as any);
+
+// IMPORTANT: do NOT pass psbt (class instance) through navigation params
+navigation.navigate('Confirm', {
+  fee: new BigNumber(fee).dividedBy(100000000).toNumber(),
+  memo: transactionMemo,
+  walletID: wallet.getID(),
+  tx: tx.toHex(),
+  recipients: recipientsSerializable,
+  targets: targetsForNav,
+  satoshiPerByte: _navNumber(requestedSatPerByte),
+  payjoinUrl,
+  psbtBase64: psbt.toBase64(), // instead of psbt object
+});
     setIsLoading(false);
   };
 
