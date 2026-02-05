@@ -1,9 +1,10 @@
 import { Icon } from '@rneui/base';
 import React, { useRef, useState } from 'react';
 import { Animated, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Camera, CameraApi, CameraType, Orientation } from 'react-native-camera-kit-no-google';
-import { OnOrientationChangeData, OnReadCodeData } from 'react-native-camera-kit-no-google/dist/CameraProps';
-
+// neu (wie v7.2.3)
+import { Camera, CameraApi, CameraType, Orientation } from 'react-native-camera-kit';
+// plus diese Types:
+import { OnOrientationChangeData, OnReadCodeData } from 'react-native-camera-kit/dist/CameraProps';
 import { isDesktop } from '../blue_modules/environment';
 import { triggerSelectionHapticFeedback } from '../blue_modules/hapticFeedback';
 import loc from '../loc';

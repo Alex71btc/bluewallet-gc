@@ -120,3 +120,6 @@ android/app/src/debug/res/
 
 # Editor/IDE junk
 *.save
+
+# lockfiles
+yarn.lock
