@@ -622,18 +622,36 @@ const SendDetails = () => {
     }
 
     if (wallet?.type === WatchOnlyWallet.type) {
-      // watch-only wallets with enabled HW wallet support have different flow. we have to show PSBT to user as QR code
-      // so he can scan it and sign it. then we have to scan it back from user (via camera and QR code), and ask
-      // user whether he wants to broadcast it
+      // amount/fee für Success-Screen vorbereiten (BTC wie im normalen Flow)
+      const toNumber = (v: any) => {
+        if (typeof v === 'number') return v;
+        if (typeof v === 'bigint') return Number(v);
+        if (v && typeof v.toNumber === 'function') return v.toNumber(); // BigNumber etc.
+        return Number(v);
+      };
+
+      let recipientsForAmount = outputs.filter(({ address }) => address !== change);
+      if (recipientsForAmount.length === 0) recipientsForAmount = outputs;
+
+      const amountSat = recipientsForAmount.reduce((sum, o) => sum + toNumber((o as any).value), 0);
+      const feeSat = toNumber(fee);
+
       navigation.navigate('PsbtWithHardwareWallet', {
         memo: transactionMemo,
         walletID: wallet.getID(),
         psbt,
         launchedBy: routeParams.launchedBy,
+
+        // Success erwartet in deiner UI BTC-Decimals (siehe 0.00004 BTC)
+        amount: amountSat / 1e8,
+        fee: feeSat / 1e8,
+        amountUnit: BitcoinUnit.BTC,
       });
+
       setIsLoading(false);
       return;
     }
+
 
     if (wallet?.type === MultisigHDWallet.type) {
       navigation.navigate('PsbtMultisig', {

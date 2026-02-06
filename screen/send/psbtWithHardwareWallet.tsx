@@ -29,7 +29,7 @@ const PsbtWithHardwareWallet = () => {
   const { isBiometricUseCapableAndEnabled } = useBiometrics();
   const navigation = useExtendedNavigation();
   const route = useRoute<RouteProp<SendDetailsStackParamList, 'PsbtWithHardwareWallet'>>();
-  const { walletID, memo, psbt, deepLinkPSBT, launchedBy } = route.params;
+  const { walletID, memo, psbt, deepLinkPSBT, launchedBy, amount, fee, amountUnit } = route.params as any;
   const wallet = wallets.find(w => w.getID() === walletID) as WatchOnlyWallet;
   const routeParamsPSBT = useRef(route.params.psbt);
   const routeParamsTXHex = route.params.txhex;
@@ -164,7 +164,7 @@ const PsbtWithHardwareWallet = () => {
         if (memo) {
           txMetadata[txid] = { memo };
         }
-        navigation.navigate('Success', { amount: undefined });
+        navigation.navigate('Success', { txid, amount, fee, amountUnit });
         await new Promise(resolve => setTimeout(resolve, 3000)); // sleep to make sure network propagates
         fetchAndSaveWalletTransactions(wallet.getID());
       } else {
