@@ -1,67 +1,74 @@
-import { Alert } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { DetailViewStackParamList } from '../../navigation/DetailViewStackParamList';
+import React from 'react';
+import { Platform, StyleSheet } from 'react-native';
+import ListItem, { PressableWrapper } from '../../components/ListItem';
+import { useTheme } from '../../components/themes';
 import loc from '../../loc';
-import { SettingsScrollView, SettingsSection, SettingsListItem } from '../../components/platform';
+import { useStorage } from '../../hooks/context/useStorage';
+import { useSettings } from '../../hooks/context/useSettings';
+import SafeAreaScrollView from '../../components/SafeAreaScrollView';
+import { BlueSpacing20 } from '../../components/BlueSpacing';
 
-const STORAGE_KEY_LEGACY_URV1_QR = 'LEGACY_URV1_QR';
+type NavigationProp = NativeStackNavigationProp<DetailViewStackParamList, 'GeneralSettings'>;
 
-const General: React.FC = () => {
-  console.log('[GeneralHub] mounted');
-  const { navigate } = useExtendedNavigation();
-  const [legacyUrv1QrEnabled, setLegacyUrv1QrEnabled] = useState<boolean>(false);
-  const [loaded, setLoaded] = useState(false);
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+});
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const v = await AsyncStorage.getItem(STORAGE_KEY_LEGACY_URV1_QR);
-        setLegacyUrv1QrEnabled(v === '1');
-      } catch (_) {
-        // ignore
-      } finally {
-        setLoaded(true);
-      }
-    })();
-  }, []);
+const GeneralSettings: React.FC = () => {
+  const { wallets } = useStorage();
+  const { isHandOffUseEnabled, setIsHandOffUseEnabledAsyncStorage, isLegacyURv1Enabled, setIsLegacyURv1EnabledStorage } = useSettings();
+  const { navigate } = useNavigation<NavigationProp>();
+  const { colors } = useTheme();
 
-  const onToggleLegacy = useCallback(async (value: boolean) => {
-    setLegacyUrv1QrEnabled(value);
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY_LEGACY_URV1_QR, value ? '1' : '0');
-    } catch (e) {
-      console.warn('Failed to persist LEGACY_URV1_QR', e);
-    }
-  }, []);
-
-const goOnLaunch = useCallback(() => {
-  navigate('DefaultView');
-}, [navigate]);
-
-
-  const goPrivacy = useCallback(() => {
-    // Dein bisheriger "GeneralSettings" entspricht im Original der "Privacy"-Unterseite.
+  const navigateToPrivacy = () => {
     navigate('GeneralSettings');
-  }, [navigate]);
+  };
+
+  const onHandOffUseEnabledChange = async (value: boolean) => {
+    await setIsHandOffUseEnabledAsyncStorage(value);
+  };
+
+  const stylesWithThemeHook = {
+    root: {
+      backgroundColor: colors.background,
+    },
+  };
 
   return (
-    <SettingsScrollView testID="GeneralRoot">
-      <SettingsSection horizontalInset={false}>
-        <SettingsListItem title="On Launch" chevron onPress={goOnLaunch} position="first" />
-        <SettingsListItem title="Privacy" chevron onPress={goPrivacy} position="middle" />
-        <SettingsListItem
-          title="Legacy URv1 QR"
-          switch={{
-            value: legacyUrv1QrEnabled,
-            onValueChange: onToggleLegacy,
-            disabled: !loaded,
-          }}
-          position="last"
-        />
-      </SettingsSection>
-    </SettingsScrollView>
+    <SafeAreaScrollView
+      style={[styles.root, stylesWithThemeHook.root]}
+      automaticallyAdjustContentInsets
+      contentInsetAdjustmentBehavior="automatic"
+    >
+      {wallets.length > 0 && (
+        <>
+          <ListItem onPress={() => navigate('DefaultView')} title={loc.settings.default_title} chevron />
+        </>
+      )}
+      <ListItem title={loc.settings.privacy} onPress={navigateToPrivacy} testID="SettingsPrivacy" chevron />
+      {Platform.OS === 'ios' ? (
+        <>
+          <ListItem
+            title={loc.settings.general_continuity}
+            Component={PressableWrapper}
+            switch={{ onValueChange: onHandOffUseEnabledChange, value: isHandOffUseEnabled }}
+            subtitle={loc.settings.general_continuity_e}
+          />
+        </>
+      ) : null}
+      <ListItem
+        Component={PressableWrapper}
+        title="Legacy URv1 QR"
+        switch={{ onValueChange: setIsLegacyURv1EnabledStorage, value: isLegacyURv1Enabled }}
+      />
+      <BlueSpacing20 />
+    </SafeAreaScrollView>
   );
 };
 
-export default General;
+export default GeneralSettings;
