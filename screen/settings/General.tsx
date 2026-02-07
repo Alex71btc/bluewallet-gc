@@ -36,11 +36,9 @@ const General: React.FC = () => {
   }, []);
 
 const goOnLaunch = useCallback(() => {
-  Alert.alert(
-    'On Launch',
-    'This screen is currently not exposed in this build.',
-  );
-}, []);
+  navigate('DefaultView');
+}, [navigate]);
+
 
   const goPrivacy = useCallback(() => {
     // Dein bisheriger "GeneralSettings" entspricht im Original der "Privacy"-Unterseite.

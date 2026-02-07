@@ -3,6 +3,7 @@ import { LightningTransaction, Transaction, TWallet } from '../class/wallets/typ
 import { Chain } from '../models/bitcoinUnits';
 import { ElectrumServerItem } from '../screen/settings/ElectrumSettings';
 import { SendDetailsParams, TNavigationWrapper } from './SendDetailsStackParamList';
+import DefaultView from '../screen/settings/DefaultView';
 
 export type ScanQRCodeParamList = {
   cameraStatusGranted?: boolean;
@@ -82,7 +83,7 @@ export type DetailViewStackParamList = {
   Licensing: undefined;
   NetworkSettings: undefined;
   About: undefined;
-  // DefaultView: undefined; // Commented out - not accessible from UI
+  DefaultView: undefined;
   ElectrumSettings: { server?: ElectrumServerItem; onBarScanned?: string };
   SettingsBlockExplorer: undefined;
   EncryptStorage: undefined;
