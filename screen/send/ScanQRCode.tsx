@@ -65,7 +65,7 @@ const ScanQRCode = () => {
   const defaultLaunchedBy = previousRoute ? previousRoute.name : undefined;
 
   const { launchedBy = defaultLaunchedBy, showFileImportButton, onBarScanned } = route.params || {};
-  const scannedCache: Record<string, number> = {};
+  const scannedCacheRef = useRef<Record<string, number>>({});
   const { colors } = useTheme();
   const isFocused = useIsFocused();
   const [backdoorPressed, setBackdoorPressed] = useState(0);
@@ -92,6 +92,17 @@ const ScanQRCode = () => {
   useEffect(() => {
     isCameraAuthorizationStatusGranted().then(setCameraStatusGranted);
   }, []);
+useEffect(() => {
+  return () => {
+    // cleanup beim Verlassen des Screens
+    scannedCacheRef.current = {};
+    decoder = undefined;
+    useBBQRRef.current = false;
+    setAnimatedQRCodeData({});
+    setUrHave(0);
+    setUrTotal(0);
+  };
+}, []);
 
   const HashIt = function (s: string): string {
     return uint8ArrayToHex(sha256(s));
@@ -161,12 +172,14 @@ const ScanQRCode = () => {
   };
 
   const onBarCodeRead = (ret: { data: string }) => {
-    const h = HashIt(ret.data);
+  const h = HashIt(ret.data);
+  const scannedCache = scannedCacheRef.current;
+
     if (scannedCache[h]) {
-      // this QR was already scanned by this ScanQRCode, lets prevent firing duplicate callbacks
+      // schon gesehen → nicht nochmal decoden
       return;
     }
-    scannedCache[h] = +new Date();
+    scannedCache[h] = Date.now();
 
     if (ret.data.toUpperCase().startsWith('UR:CRYPTO-ACCOUNT')) {
       return _onReadUniformResourceV2(ret.data);

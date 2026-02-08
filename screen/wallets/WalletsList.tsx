@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useReducer, useRef, useMemo } from 'react';
 import { useFocusEffect, useIsFocused, useRoute, RouteProp } from '@react-navigation/native';
+import React, { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { Alert, findNodeHandle, Image, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { getClipboardContent } from '../../blue_modules/clipboard';
 import { isDesktop } from '../../blue_modules/environment';
@@ -24,6 +24,7 @@ import { useSettings } from '../../hooks/context/useSettings';
 import useMenuElements from '../../hooks/useMenuElements';
 import SafeAreaSectionList from '../../components/SafeAreaSectionList';
 import { scanQrHelper } from '../../helpers/scan-qr.ts';
+import useOnAppLaunch from '../../hooks/useOnAppLaunch';
 
 const WalletsListSections = { CAROUSEL: 'CAROUSEL', TRANSACTIONS: 'TRANSACTIONS' };
 
@@ -105,6 +106,33 @@ const WalletsList: React.FC = () => {
   const { width } = useWindowDimensions();
   const { colors, scanImage } = useTheme();
   const navigation = useExtendedNavigation<NavigationProps>();
+  const { isViewAllWalletsEnabled, getSelectedDefaultWallet } = useOnAppLaunch();
+  const didAutoNavigateOnLaunch = useRef(false);
+
+  useEffect(() => {
+    if (didAutoNavigateOnLaunch.current) return;
+    if (!wallets || wallets.length === 0) return;
+
+    (async () => {
+      const viewAll = await isViewAllWalletsEnabled();
+      if (viewAll) return;
+
+      const walletID = await getSelectedDefaultWallet();
+      if (!walletID) return;
+
+      const w = wallets.find(x => x.getID() === walletID);
+      if (!w) return;
+
+      didAutoNavigateOnLaunch.current = true;
+
+      navigation.navigate('WalletTransactions', {
+        walletID: w.getID(),
+        walletType: w.type, // <- wichtig, wird laut ParamList benötigt
+        isLoading: true,
+      });
+    })();
+  }, [wallets, navigation, isViewAllWalletsEnabled, getSelectedDefaultWallet]);
+
   const isFocused = useIsFocused();
   const route = useRoute<RouteProps>();
   const dataSource = getTransactions(undefined, 10);

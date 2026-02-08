@@ -40,7 +40,7 @@ import Licensing from '../screen/settings/Licensing';
 import NetworkSettings from '../screen/settings/NetworkSettings';
 import SettingsBlockExplorer from '../screen/settings/SettingsBlockExplorer';
 import About from '../screen/settings/About';
-// import DefaultView from '../screen/settings/DefaultView'; // Commented out - not accessible from UI
+import DefaultView from '../screen/settings/DefaultView';
 import ElectrumSettings from '../screen/settings/ElectrumSettings';
 import EncryptStorage from '../screen/settings/EncryptStorage';
 import Language from '../screen/settings/Language';
@@ -288,6 +288,7 @@ const DetailViewStackScreensStack = () => {
   component={General}
   options={navigationStyle(getSettingsHeaderOptions(loc.settings.general))(theme)}
 />
+  <DetailViewStack.Screen name="DefaultView" component={DefaultView} />
   <DetailViewStack.Screen
         name="Currency"
         component={Currency}

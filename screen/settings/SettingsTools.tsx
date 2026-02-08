@@ -1,51 +1,18 @@
 import React from 'react';
+import ListItem from '../../components/ListItem';
 import { useExtendedNavigation } from '../../hooks/useExtendedNavigation';
 import loc from '../../loc';
-import { SettingsScrollView, SettingsSection, SettingsListItem } from '../../components/platform';
+import SafeAreaScrollView from '../../components/SafeAreaScrollView';
 
 const SettingsTools: React.FC = () => {
-  const navigation = useExtendedNavigation();
-  const navigateToIsItMyAddress = () => {
-    navigation.navigate('IsItMyAddress');
-  };
-
-  const navigateToBroadcast = () => {
-    navigation.navigate('Broadcast');
-  };
-
-  const navigateToGenerateWord = () => {
-    navigation.navigate('GenerateWord');
-  };
+  const { navigate } = useExtendedNavigation();
 
   return (
-    <SettingsScrollView>
-      <SettingsSection horizontalInset={false}>
-        <SettingsListItem
-          title={loc.is_it_my_address.title}
-          iconName="search"
-          onPress={navigateToIsItMyAddress}
-          testID="IsItMyAddress"
-          chevron
-          position="first"
-        />
-        <SettingsListItem
-          title={loc.settings.network_broadcast}
-          iconName="paperPlane"
-          onPress={navigateToBroadcast}
-          testID="Broadcast"
-          chevron
-          position="middle"
-        />
-        <SettingsListItem
-          title={loc.autofill_word.title}
-          iconName="key"
-          onPress={navigateToGenerateWord}
-          testID="GenerateWord"
-          chevron
-          position="last"
-        />
-      </SettingsSection>
-    </SettingsScrollView>
+    <SafeAreaScrollView>
+      <ListItem title={loc.is_it_my_address.title} onPress={() => navigate('IsItMyAddress')} testID="IsItMyAddress" chevron />
+      <ListItem title={loc.settings.network_broadcast} onPress={() => navigate('Broadcast')} testID="Broadcast" chevron />
+      <ListItem title={loc.autofill_word.title} onPress={() => navigate('GenerateWord')} testID="GenerateWord" chevron />
+    </SafeAreaScrollView>
   );
 };
 

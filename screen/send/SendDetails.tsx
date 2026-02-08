@@ -622,18 +622,36 @@ const SendDetails = () => {
     }
 
     if (wallet?.type === WatchOnlyWallet.type) {
-      // watch-only wallets with enabled HW wallet support have different flow. we have to show PSBT to user as QR code
-      // so he can scan it and sign it. then we have to scan it back from user (via camera and QR code), and ask
-      // user whether he wants to broadcast it
+      // amount/fee für Success-Screen vorbereiten (BTC wie im normalen Flow)
+      const toNumber = (v: any) => {
+        if (typeof v === 'number') return v;
+        if (typeof v === 'bigint') return Number(v);
+        if (v && typeof v.toNumber === 'function') return v.toNumber(); // BigNumber etc.
+        return Number(v);
+      };
+
+      let recipientsForAmount = outputs.filter(({ address }) => address !== change);
+      if (recipientsForAmount.length === 0) recipientsForAmount = outputs;
+
+      const amountSat = recipientsForAmount.reduce((sum, o) => sum + toNumber((o as any).value), 0);
+      const feeSat = toNumber(fee);
+
       navigation.navigate('PsbtWithHardwareWallet', {
         memo: transactionMemo,
         walletID: wallet.getID(),
         psbt,
         launchedBy: routeParams.launchedBy,
+
+        // Success erwartet in deiner UI BTC-Decimals (siehe 0.00004 BTC)
+        amount: amountSat / 1e8,
+        fee: feeSat / 1e8,
+        amountUnit: BitcoinUnit.BTC,
       });
+
       setIsLoading(false);
       return;
     }
+
 
     if (wallet?.type === MultisigHDWallet.type) {
       navigation.navigate('PsbtMultisig', {
@@ -661,17 +679,54 @@ const SendDetails = () => {
       recipients = outputs;
     }
 
-    navigation.navigate('Confirm', {
-      fee: new BigNumber(fee).dividedBy(100000000).toNumber(),
-      memo: transactionMemo,
-      walletID: wallet.getID(),
-      tx: tx.toHex(),
-      targets: targetsOrig,
-      recipients,
-      satoshiPerByte: requestedSatPerByte,
-      payjoinUrl,
-      psbt,
-    });
+// helper: make sure navigation params are serializable (no BigInt, no class instances)
+// make navigation params serializable (React Navigation requirement)
+const recipientsSerializable = recipients.map(r => ({
+  ...r,
+  value: typeof (r as any).value === 'object' ? Number((r as any).value) : (r as any).value,
+}));
+
+const _navNumber = (v: any): any => {
+  if (typeof v === 'number') return v;
+  if (typeof v === 'bigint') return Number(v);
+  if (typeof v === 'string') {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : v;
+  }
+  if (v && typeof v === 'object') {
+    // BigNumber (bignumber.js) etc.
+    if (typeof (v as any).toNumber === 'function') return (v as any).toNumber();
+    if (typeof (v as any).toString === 'function') {
+      const s = (v as any).toString();
+      const n = Number(s);
+      if (Number.isFinite(n)) return n;
+    }
+  }
+  return v;
+};
+
+const _sanitizeRecipients = (arr: any[]) =>
+  (arr || []).map(r => ({
+    ...r,
+    value: _navNumber((r as any).value),
+    amount: _navNumber((r as any).amount), // just in case some code uses amount
+  }));
+
+const recipientsForNav = _sanitizeRecipients(recipients);
+const targetsForNav = _sanitizeRecipients(targetsOrig as any);
+
+// IMPORTANT: do NOT pass psbt (class instance) through navigation params
+navigation.navigate('Confirm', {
+  fee: new BigNumber(fee).dividedBy(100000000).toNumber(),
+  memo: transactionMemo,
+  walletID: wallet.getID(),
+  tx: tx.toHex(),
+  recipients: recipientsSerializable,
+  targets: targetsForNav,
+  satoshiPerByte: _navNumber(requestedSatPerByte),
+  payjoinUrl,
+  psbtBase64: psbt.toBase64(), // instead of psbt object
+});
     setIsLoading(false);
   };
 

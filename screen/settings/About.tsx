@@ -1,5 +1,5 @@
 import Clipboard from '@react-native-clipboard/clipboard';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { Alert, Image, Linking, Platform, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { getApplicationName, getBuildNumber, getBundleId, getUniqueIdSync, getVersion, hasGmsSync } from 'react-native-device-info';
 import Icon from 'react-native-vector-icons/FontAwesome5';
@@ -36,6 +36,14 @@ const About: React.FC = () => {
   const { width, height } = useWindowDimensions();
   const { isElectrumDisabled } = useSettings();
   const { colors } = useTheme();
+
+  // Hermes: UI + Logcat anzeigen
+  const isHermesEnabled = !!(global as any).HermesInternal;
+
+  useEffect(() => {
+    // zeigt in Logcat/Metro an, ob Hermes läuft
+    console.log('Hermes enabled?', isHermesEnabled);
+  }, [isHermesEnabled]);
 
   const handleOnReleaseNotesPress = useCallback(() => {
     navigate('ReleaseNotes');
@@ -105,20 +113,20 @@ const About: React.FC = () => {
         logoTapTimerRef.current = null;
       }
 
-Alert.alert(
-  'Developer',
-  'Open Notification Settings (GroundControl).',
-  [
-    { text: 'Cancel', style: 'cancel' },
-    {
-      text: 'Open',
-      onPress: () => navigate('NotificationSettings'),
-    },
-  ],
-  { cancelable: true },
-);
+      Alert.alert(
+        'Developer',
+        'Open Notification Settings (GroundControl).',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Open',
+            onPress: () => navigate('NotificationSettings'),
+          },
+        ],
+        { cancelable: true },
+      );
     }
-  }, []);
+  }, [navigate]);
 
   const handlePerformanceTest = useCallback(async () => {
     const secret = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
@@ -261,6 +269,9 @@ Alert.alert(
             </Text>
             <Text style={[styles.footerText, { color: colors.alternativeTextColor }]}>Unique ID: {getUniqueIdSync()}</Text>
 
+            {/* Schritt 4: Hermes in der UI anzeigen */}
+            <Text style={[styles.footerText, { color: colors.alternativeTextColor }]}>Hermes: {String(isHermesEnabled)}</Text>
+
             <View style={styles.copyToClipboard}>
               <TouchableOpacity
                 accessibilityRole="button"
@@ -296,6 +307,7 @@ Alert.alert(
     handlePerformanceTest,
     width,
     height,
+    isHermesEnabled,
   ]);
 
   const renderItem = useCallback(

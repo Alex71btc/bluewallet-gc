@@ -227,14 +227,38 @@ const PsbtMultisig = () => {
     try {
       const tx = psbt.extractTransaction().toHex();
       const satoshiPerByte = Math.round(getFee() / psbt.extractTransaction().virtualSize());
-      navigate('Confirm', {
-        fee: new BigNumber(getFee()).dividedBy(100000000).toNumber(),
-        memo,
-        walletID,
-        tx,
-        recipients: targets,
-        satoshiPerByte,
-      });
+const _navNumber = (v: any): any => {
+  if (typeof v === 'number') return v;
+  if (typeof v === 'bigint') return Number(v);
+  if (typeof v === 'string') {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : v;
+  }
+  if (v && typeof v === 'object') {
+    if (typeof (v as any).toNumber === 'function') return (v as any).toNumber();
+    if (typeof (v as any).toString === 'function') {
+      const s = (v as any).toString();
+      const n = Number(s);
+      if (Number.isFinite(n)) return n;
+    }
+  }
+  return v;
+};
+
+const recipientsForNav = (targets || []).map((t: any) => ({
+  ...t,
+  value: _navNumber(t.value),
+  amount: _navNumber(t.amount),
+}));
+
+navigate('Confirm', {
+  fee: new BigNumber(getFee()).dividedBy(100000000).toNumber(),
+  memo,
+  walletID,
+  tx,
+  recipients: recipientsForNav,
+  satoshiPerByte: _navNumber(satoshiPerByte),
+});
     } catch (error: any) {
       presentAlert({ message: error });
     }

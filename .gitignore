@@ -115,3 +115,11 @@ android/keystores/
 android/reproducible.keystore
 # Firebase
 android/app/google-services.json
+!!MenuView.save
+android/app/src/debug/res/
+
+# Editor/IDE junk
+*.save
+
+# lockfiles
+yarn.lock

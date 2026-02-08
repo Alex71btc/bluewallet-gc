@@ -114,7 +114,11 @@ signingConfigs {
 }
 
     buildTypes {
-        release {
+         debug {
+        applicationIdSuffix ".debug"
+        versionNameSuffix "-debug"
+    }
+release {
             signingConfig signingConfigs.release
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
@@ -155,4 +159,6 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
 }
 apply plugin: "com.bugsnag.android.gradle"
-apply plugin: "com.google.gms.google-services"
+if (gradle.startParameter.taskNames.any { it.toLowerCase().contains("release") }) {
+    apply plugin: "com.google.gms.google-services"
+}

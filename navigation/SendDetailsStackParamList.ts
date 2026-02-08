@@ -56,17 +56,19 @@ export type SendDetailsStackParamList = {
     walletID: string;
     customFee?: string | null;
   };
-  Confirm: {
-    fee: number;
-    memo?: string;
-    walletID: string;
-    tx: string;
-    targets?: CreateTransactionTarget[]; // needed to know if there were paymentCodes, which turned into addresses in `recipients`
-    recipients: CreateTransactionTarget[];
-    satoshiPerByte: number;
-    payjoinUrl?: string | null;
-    psbt: Psbt;
-  };
+Confirm: {
+  fee: number;
+  memo?: string;
+  walletID: string;
+  tx: string;
+  targets?: CreateTransactionTarget[]; // needed to know if there were paymentCodes, which turned into addresses in `recipients`
+  recipients: CreateTransactionTarget[];
+  satoshiPerByte: number;
+  payjoinUrl?: string | null;
+
+  // keep params serializable:
+  psbtBase64?: string;
+};
   PsbtWithHardwareWallet: {
     memo?: string;
     walletID: string;
