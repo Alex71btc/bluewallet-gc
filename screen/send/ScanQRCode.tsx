@@ -341,6 +341,13 @@ useEffect(() => {
           onFilePickerButtonPress={showFilePicker}
           onImagePickerButtonPress={onShowImagePickerButtonPress}
           onCancelButtonPress={dismiss}
+          onPreviewReady={() => {
+            // record preview ready timestamp once
+            if (!perfRef.current.previewReady) {
+              perfRef.current.previewReady = Date.now();
+              console.debug(`QR PERF: previewReady t2=${perfRef.current.previewReady}`);
+            }
+          }}
         />
       ) : null}
       {urTotal > 0 && (
