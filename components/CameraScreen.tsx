@@ -27,12 +27,14 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
   onImagePickerButtonPress,
   onFilePickerButtonPress,
   onReadCode,
+  onPreviewReady,
 }) => {
   const cameraRef = useRef<CameraApi>(null);
   const [torchMode, setTorchMode] = useState(false);
   const [cameraType, setCameraType] = useState(CameraType.Back);
   const [zoom, setZoom] = useState<number | undefined>();
   const [orientationAnim] = useState(new Animated.Value(3));
+  const previewDidFireRef = useRef(false);
 
   const onSwitchCameraPressed = () => {
     const direction = cameraType === CameraType.Back ? CameraType.Front : CameraType.Back;
@@ -159,16 +161,26 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
 
           // notify when preview/camera is initialized and preview frames start
           // some Camera lib variants expose onInitialized / onCameraReady
-          // we call through to parent via onPreviewReady
+          // we call through to parent via onPreviewReady, but ensure it's only fired once
           // @ts-ignore
           onInitialized={() => {
             try {
-              (typeof (onReadCode) !== 'undefined');
-            } catch (e) {}
-            // call parent hook
-            if (typeof (props as any).onPreviewReady === 'function') {
-              (props as any).onPreviewReady();
+              if (!previewDidFireRef.current) {
+                previewDidFireRef.current = true;
+                if (typeof onPreviewReady === 'function') onPreviewReady();
+              }
+            } catch (e) {
+              // ignore
             }
+          }}
+          // Fallback: some builds don't fire onInitialized. Use onLayout of camera container.
+          onLayout={() => {
+            try {
+              if (!previewDidFireRef.current) {
+                previewDidFireRef.current = true;
+                if (typeof onPreviewReady === 'function') onPreviewReady();
+              }
+            } catch (e) {}
           }}
 
           zoom={zoom}
