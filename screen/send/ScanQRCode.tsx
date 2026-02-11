@@ -89,8 +89,20 @@ const ScanQRCode = () => {
     },
   });
 
+  // Performance instrumentation
+  const perfRef = useRef({
+    t0: Date.now(),
+    previewReady: 0,
+    firstAttemptAt: 0,
+    firstSuccessAt: 0,
+    attempts: 0,
+    lastFlush: Date.now(),
+  });
+  const lockedRef = useRef(false);
+
   useEffect(() => {
     isCameraAuthorizationStatusGranted().then(setCameraStatusGranted);
+    perfRef.current.t0 = Date.now();
   }, []);
 useEffect(() => {
   return () => {
@@ -172,6 +184,16 @@ useEffect(() => {
   };
 
   const onBarCodeRead = (ret: { data: string }) => {
+    // instrumentation: count attempts and log once/sec
+    perfRef.current.attempts++;
+    const now = Date.now();
+    if (!perfRef.current.firstAttemptAt) perfRef.current.firstAttemptAt = now;
+    if (now - perfRef.current.lastFlush > 1000) {
+      console.debug(`QR PERF: attempts/sec=${perfRef.current.attempts} t0=${perfRef.current.t0}`);
+      perfRef.current.attempts = 0;
+      perfRef.current.lastFlush = now;
+    }
+
   const h = HashIt(ret.data);
   const scannedCache = scannedCacheRef.current;
 
@@ -180,6 +202,11 @@ useEffect(() => {
       return;
     }
     scannedCache[h] = Date.now();
+
+    if (lockedRef.current) {
+      // already locked / navigating
+      return;
+    }
 
     if (ret.data.toUpperCase().startsWith('UR:CRYPTO-ACCOUNT')) {
       return _onReadUniformResourceV2(ret.data);
@@ -216,6 +243,8 @@ useEffect(() => {
       const data = uint8ArrayToBase64(hexToUint8Array(hex));
 
       if (launchedBy) {
+        lockedRef.current = true;
+        perfRef.current.firstSuccessAt = Date.now();
         const merge = true;
         const popToAction = StackActions.popTo(launchedBy, { onBarScanned: data }, { merge });
         if (onBarScanned) {
@@ -228,6 +257,8 @@ useEffect(() => {
       if (!isLoading && launchedBy) {
         setIsLoading(true);
         try {
+          lockedRef.current = true;
+          perfRef.current.firstSuccessAt = Date.now();
           const merge = true;
 
           const popToAction = StackActions.popTo(launchedBy, { onBarScanned: ret.data }, { merge });
