@@ -16,6 +16,8 @@ interface CameraScreenProps {
   onImagePickerButtonPress?: () => void;
   onFilePickerButtonPress?: () => void;
   onReadCode?: (event: OnReadCodeData) => void;
+  // Preview ready hook for perf instrumentation
+  onPreviewReady?: () => void;
 }
 
 const CameraScreen: React.FC<CameraScreenProps> = ({
@@ -154,6 +156,20 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           // Manche no-google Forks haben die Prop, aber die TS-Typen fehlen.
           // @ts-ignore
           scanThrottleDelay={0}  // testweise 0; wenn zu "nervös", nimm 30 oder 50
+
+          // notify when preview/camera is initialized and preview frames start
+          // some Camera lib variants expose onInitialized / onCameraReady
+          // we call through to parent via onPreviewReady
+          // @ts-ignore
+          onInitialized={() => {
+            try {
+              (typeof (onReadCode) !== 'undefined');
+            } catch (e) {}
+            // call parent hook
+            if (typeof (props as any).onPreviewReady === 'function') {
+              (props as any).onPreviewReady();
+            }
+          }}
 
           zoom={zoom}
           onZoom={handleZoom}
