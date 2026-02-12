@@ -198,11 +198,19 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           // notify when preview/camera is initialized and preview frames start
           // some Camera lib variants expose onInitialized / onCameraReady
           // we call through to parent via onPreviewReady, but ensure it's only fired once
+          // Additionally we log the actual camera props here for truthful telemetry
           // @ts-ignore
           onInitialized={() => {
             try {
               if (!previewDidFireRef.current) {
                 previewDidFireRef.current = true;
+                // log actual effective camera props
+                const actualCfg = {
+                  animatedMode: animatedMode,
+                  scanThrottleDelayMs: scanThrottleDelayMs ?? 0,
+                  forcedRoi: forcedRoi || null,
+                };
+                console.info('QR CAM ACTUAL ' + JSON.stringify(actualCfg));
                 if (typeof onPreviewReady === 'function') onPreviewReady();
               }
             } catch (e) {
@@ -214,6 +222,12 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
             try {
               if (!previewDidFireRef.current) {
                 previewDidFireRef.current = true;
+                const actualCfg = {
+                  animatedMode: animatedMode,
+                  scanThrottleDelayMs: scanThrottleDelayMs ?? 0,
+                  forcedRoi: forcedRoi || null,
+                };
+                console.info('QR CAM ACTUAL ' + JSON.stringify(actualCfg));
                 if (typeof onPreviewReady === 'function') onPreviewReady();
               }
             } catch (e) {}
