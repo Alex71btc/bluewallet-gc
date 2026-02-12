@@ -140,6 +140,19 @@ const ScanQRCode = () => {
     }
   };
 
+  // Patch E: JS-side duplicate breaker + streak metrics
+  const lastAcceptedAtRef = useRef(0);
+  const lastAcceptedRawRef = useRef<string | null>(null);
+  const sameStreakRef = useRef(0);
+  const cooldownUntilRef = useRef(0);
+  const repeatsTotalRef = useRef(0);
+  const maxSameStreakRef = useRef(0);
+  const uniquePartsSetRef = useRef<Set<string>>(new Set());
+  const JS_DUPLICATE_MS = 80; // default acceptance throttle for identical raw
+  const SAME_STREAK_LIMIT = 6;
+  const SAME_STREAK_COOLDOWN_MS = 250;
+
+
   const workerLoop = async () => {
     if (processingRef.current) return;
     processingRef.current = true;
@@ -167,7 +180,24 @@ const ScanQRCode = () => {
               const partsProcessed = partsProcessedRef.current;
               const peakQueue = peakQueueRef.current;
               const ms_after_preview = t2 && firstSuccess ? (firstSuccess - t2) : 0;
-              console.debug(`QR PERF SUMMARY: t0=${t0} t2=${t2} firstAttempt=${firstAttempt} firstSuccess=${firstSuccess} ms_after_preview=${ms_after_preview} partsProcessed=${partsProcessed} peakQueue=${peakQueue}`);
+              const uniquePartsCount = uniquePartsSetRef.current.size;
+              const repeatsTotal = repeatsTotalRef.current;
+              const maxSameStreak = maxSameStreakRef.current;
+              const lastPartHead = (lastAcceptedRawRef.current || '').slice(0,20).replace(/\n/g,'\\n');
+              const summary = {
+                t0,
+                t2,
+                firstAttempt,
+                firstSuccess,
+                ms_after_preview,
+                partsProcessed,
+                peakQueue,
+                uniquePartsCount,
+                repeatsTotal,
+                maxSameStreak,
+                lastPartHead,
+              };
+              console.debug('QR PERF SUMMARY ' + JSON.stringify(summary));
 
               if (launchedBy) {
                 const merge = true;
@@ -307,6 +337,43 @@ useEffect(() => {
         debugCountRef.current++;
       } catch (e) {
         console.debug('QR RAW: debug logging failed: ' + (e?.message || e));
+      }
+    }
+
+    // JS-side duplicate breaker for animated sessions
+    if (animatedMode) {
+      const raw = ret.data || '';
+      const now2 = Date.now();
+      // if in cooldown, drop identical
+      if (cooldownUntilRef.current && now2 < cooldownUntilRef.current && raw === lastAcceptedRawRef.current) {
+        repeatsTotalRef.current++;
+        return;
+      }
+      if (raw === lastAcceptedRawRef.current) {
+        if (now2 - lastAcceptedAtRef.current < JS_DUPLICATE_MS) {
+          repeatsTotalRef.current++;
+          sameStreakRef.current = (sameStreakRef.current || 0) + 1;
+          maxSameStreakRef.current = Math.max(maxSameStreakRef.current, sameStreakRef.current);
+          if (sameStreakRef.current >= SAME_STREAK_LIMIT) {
+            cooldownUntilRef.current = now2 + SAME_STREAK_COOLDOWN_MS;
+            // drop this and subsequent identical parts during cooldown
+            repeatsTotalRef.current++;
+            return;
+          }
+          return; // drop quick duplicate
+        } else {
+          // accepted after throttle
+          lastAcceptedAtRef.current = now2;
+          sameStreakRef.current = (lastAcceptedRawRef.current === raw) ? sameStreakRef.current + 1 : 1;
+          maxSameStreakRef.current = Math.max(maxSameStreakRef.current, sameStreakRef.current);
+          uniquePartsSetRef.current.add(raw);
+        }
+      } else {
+        // different part; accept
+        lastAcceptedRawRef.current = raw;
+        lastAcceptedAtRef.current = now2;
+        sameStreakRef.current = 1;
+        uniquePartsSetRef.current.add(raw);
       }
     }
 
