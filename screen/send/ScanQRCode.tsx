@@ -169,8 +169,8 @@ const ScanQRCode = () => {
   const uniquePartsSetRef = useRef<Set<string>>(new Set());
   const JS_DUPLICATE_MS = 200; // increased throttle for identical raw (ms)
   const DUPLICATE_WINDOW_TTL = 1000; // ms: if raw in seenSet and within this window, drop
-  const SAME_STREAK_LIMIT = 6;
-  const SAME_STREAK_COOLDOWN_MS = 250;
+  const SAME_STREAK_LIMIT = 3;
+  const SAME_STREAK_COOLDOWN_MS = 400;
 
 
   const workerLoop = async () => {
@@ -605,6 +605,18 @@ useEffect(() => {
             // record preview ready timestamp once
             if (!perfRef.current.previewReady) {
               perfRef.current.previewReady = Date.now();
+              // Log previewReady and camera config (JSON single-line)
+              const cfg = {
+                animatedMode: animatedMode,
+                queueCap: QUEUE_CAP,
+                progressThrottleMs: PROGRESS_THROTTLE_MS,
+                jsDuplicateMs: JS_DUPLICATE_MS,
+                duplicateWindowTtl: DUPLICATE_WINDOW_TTL,
+                cameraScanThrottleMs: (sessionThrottleOverride !== undefined) ? sessionThrottleOverride : (animatedMode ? 100 : 0),
+                resetFocusWhenMotionDetected: animatedMode ? true : false,
+                roi: animatedMode ? { x: 0.175, y: 0.325, width: 0.65, height: 0.35 } : null,
+              };
+              console.info('QR CAM CFG ' + JSON.stringify(cfg));
               console.debug(`QR PERF: previewReady t2=${perfRef.current.previewReady}`);
             }
           }}
