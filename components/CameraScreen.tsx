@@ -18,6 +18,10 @@ interface CameraScreenProps {
   onReadCode?: (event: OnReadCodeData) => void;
   // Preview ready hook for perf instrumentation
   onPreviewReady?: () => void;
+  // Animated-mode knobs
+  animatedMode?: boolean;
+  resetFocusWhenMotionDetected?: boolean;
+  scanThrottleDelayMs?: number;
 }
 
 const CameraScreen: React.FC<CameraScreenProps> = ({
@@ -28,6 +32,9 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
   onFilePickerButtonPress,
   onReadCode,
   onPreviewReady,
+  animatedMode = false,
+  resetFocusWhenMotionDetected,
+  scanThrottleDelayMs,
 }) => {
   const cameraRef = useRef<CameraApi>(null);
   const [torchMode, setTorchMode] = useState(false);
@@ -151,13 +158,14 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           onReadCode={handleReadCode}
           torchMode={torchMode ? 'on' : 'off'}
 
-          // ✅ WICHTIG: bei rotierenden Animated-QRs bremst Motion-Focus-Reset häufig extrem
-          resetFocusWhenMotionDetected={false}
+          // resetFocusWhenMotionDetected: allow prop override, but enable for animatedMode to reduce repeated identical reads
+          resetFocusWhenMotionDetected={
+            animatedMode ? true : (resetFocusWhenMotionDetected ?? false)
+          }
 
-          // ✅ WICHTIG: Animated QR braucht viele Frames / Sekunde
-          // Manche no-google Forks haben die Prop, aber die TS-Typen fehlen.
+          // scanThrottleDelay: allow prop; if animatedMode and no explicit prop, use 15ms to reduce duplicates
           // @ts-ignore
-          scanThrottleDelay={0}  // testweise 0; wenn zu "nervös", nimm 30 oder 50
+          scanThrottleDelay={animatedMode ? (typeof scanThrottleDelayMs === 'number' ? scanThrottleDelayMs : 15) : (scanThrottleDelayMs ?? 0)}  // ms
 
           // notify when preview/camera is initialized and preview frames start
           // some Camera lib variants expose onInitialized / onCameraReady
