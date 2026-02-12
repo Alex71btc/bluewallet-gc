@@ -74,6 +74,7 @@ const ScanQRCode = () => {
   const [backdoorText, setBackdoorText] = useState('');
   const [backdoorVisible, setBackdoorVisible] = useState(false);
   const useBBQRRef = useRef(false);
+  const [animatedMode, setAnimatedMode] = useState(false);
   const [animatedQRCodeData, setAnimatedQRCodeData] = useState<Record<string, string>>({});
   const [cameraStatusGranted, setCameraStatusGranted] = useState<boolean | undefined>(undefined);
   const stylesHook = StyleSheet.create({
@@ -346,6 +347,8 @@ useEffect(() => {
       }
       // ensure firstAttempt timestamp
       if (!perfRef.current.firstAttemptAt) perfRef.current.firstAttemptAt = now;
+      // mark animated mode for this session
+      setAnimatedMode(true);
       // start worker async without blocking
       setTimeout(() => workerLoop(), 0);
       return;
@@ -364,6 +367,7 @@ useEffect(() => {
         if (pendingPartsQueueRef.current.length > QUEUE_CAP) pendingPartsQueueRef.current.shift();
         peakQueueRef.current = Math.max(peakQueueRef.current, pendingPartsQueueRef.current.length);
         if (!perfRef.current.firstAttemptAt) perfRef.current.firstAttemptAt = now;
+        setAnimatedMode(true);
         setTimeout(() => workerLoop(), 0);
         return;
       }
