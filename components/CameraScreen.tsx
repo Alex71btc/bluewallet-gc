@@ -195,10 +195,11 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           // @ts-ignore
           whiteBalance={animatedMode ? 'auto' : undefined}
 
-          // notify when preview/camera is initialized and preview frames start
+                  // notify when preview/camera is initialized and preview frames start
           // some Camera lib variants expose onInitialized / onCameraReady
           // we call through to parent via onPreviewReady, but ensure it's only fired once
           // Additionally we log the actual camera props here for truthful telemetry
+          // and call onEffectApplied to inform parent of effective throttle
           // @ts-ignore
           onInitialized={() => {
             try {
@@ -211,6 +212,14 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
                   forcedRoi: forcedRoi || null,
                 };
                 console.info('QR CAM ACTUAL ' + JSON.stringify(actualCfg));
+                // notify parent of the actual throttle in effect
+                try {
+                  // @ts-ignore
+                  if (typeof (CameraScreen as any).props?.onEffectApplied === 'function') {
+                    // @ts-ignore
+                    (CameraScreen as any).props.onEffectApplied(actualCfg.scanThrottleDelayMs);
+                  }
+                } catch (e) {}
                 if (typeof onPreviewReady === 'function') onPreviewReady();
               }
             } catch (e) {
@@ -228,6 +237,13 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
                   forcedRoi: forcedRoi || null,
                 };
                 console.info('QR CAM ACTUAL ' + JSON.stringify(actualCfg));
+                try {
+                  // @ts-ignore
+                  if (typeof (CameraScreen as any).props?.onEffectApplied === 'function') {
+                    // @ts-ignore
+                    (CameraScreen as any).props.onEffectApplied(actualCfg.scanThrottleDelayMs);
+                  }
+                } catch (e) {}
                 if (typeof onPreviewReady === 'function') onPreviewReady();
               }
             } catch (e) {}

@@ -99,6 +99,9 @@ const ScanQRCode = () => {
     attempts: 0,
     lastFlush: Date.now(),
   });
+  // shared ref to read actual effective camera throttle set at render time
+  const cameraEffectiveThrottleRef = useRef<number | null>(null);
+
   const lockedRef = useRef(false);
 
   // Patch B: Backpressure + dedupe + UI batching for animated UR/BBQR
@@ -636,6 +639,9 @@ useEffect(() => {
           scanThrottleDelayMs={typeof (global as any).forcedScanThrottle === 'number' ? (global as any).forcedScanThrottle : (sessionThrottleOverride !== undefined ? sessionThrottleOverride : (animatedMode ? 300 : 0))}
           // @ts-ignore
           forcedRoi={typeof (global as any).forcedRoi === 'object' ? (global as any).forcedRoi : (animatedMode ? { x: 0.25, y: 0.325, width: 0.4, height: 0.35 } : null)}
+          // update the cameraEffectiveThrottleRef so per-second telemetry reads the exact effective value
+          // @ts-ignore
+          onEffectApplied={(throttleMs: number) => { cameraEffectiveThrottleRef.current = throttleMs; }}
           onPreviewReady={() => {
             // record preview ready timestamp once
             if (!perfRef.current.previewReady) {
@@ -647,9 +653,9 @@ useEffect(() => {
                 progressThrottleMs: PROGRESS_THROTTLE_MS,
                 jsDuplicateMs: JS_DUPLICATE_MS,
                 duplicateWindowTtl: DUPLICATE_WINDOW_TTL,
-                cameraScanThrottleMs: (sessionThrottleOverride !== undefined) ? sessionThrottleOverride : (animatedMode ? 100 : 0),
+                cameraScanThrottleMs: cameraEffectiveThrottleRef.current ?? ((sessionThrottleOverride !== undefined) ? sessionThrottleOverride : (animatedMode ? 100 : 0)),
                 resetFocusWhenMotionDetected: animatedMode ? true : false,
-                roi: animatedMode ? { x: 0.175, y: 0.325, width: 0.65, height: 0.35 } : null,
+                roi: animatedMode ? (typeof (global as any).forcedRoi === 'object' ? (global as any).forcedRoi : { x: 0.25, y: 0.325, width: 0.4, height: 0.35 }) : null,
               };
               console.info('QR CAM CFG ' + JSON.stringify(cfg));
               console.debug(`QR PERF: previewReady t2=${perfRef.current.previewReady}`);
