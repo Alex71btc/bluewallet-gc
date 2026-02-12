@@ -169,18 +169,28 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
 
           // ROI / scan area for animated mode (if supported by camera lib)
           // Use guarded @ts-ignore to avoid TS errors if props don't exist
-          // center area: width 65% height 35%
+          // center area: width 60% height 35%
           // @ts-ignore
-          scanAreaX={animatedMode ? 0.175 : undefined}
+          scanAreaX={animatedMode ? 0.2 : undefined}
           // @ts-ignore
           scanAreaY={animatedMode ? 0.325 : undefined}
           // @ts-ignore
-          scanAreaWidth={animatedMode ? 0.65 : undefined}
+          scanAreaWidth={animatedMode ? 0.6 : undefined}
           // @ts-ignore
           scanAreaHeight={animatedMode ? 0.35 : undefined}
           // optionally show a frame in debug builds
           // @ts-ignore
           showFrame={animatedMode ? false : undefined}
+          
+          // stabilization / focus / exposure hints (guarded)
+          // @ts-ignore
+          continuousFocus={animatedMode ? true : undefined}
+          // @ts-ignore
+          autoExposure={animatedMode ? 'on' : undefined}
+          // @ts-ignore
+          autoFocus={animatedMode ? 'on' : undefined}
+          // @ts-ignore
+          whiteBalance={animatedMode ? 'auto' : undefined}
 
           // notify when preview/camera is initialized and preview frames start
           // some Camera lib variants expose onInitialized / onCameraReady
