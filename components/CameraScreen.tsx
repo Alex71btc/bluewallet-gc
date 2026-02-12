@@ -169,27 +169,15 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
 
           // ROI / scan area for animated mode (if supported by camera lib)
           // Use guarded @ts-ignore to avoid TS errors if props don't exist
-          // center area: width 50% height 35%
+          // If a developer-forced ROI is provided (dev runtime override), prefer it.
           // @ts-ignore
-          scanAreaX={animatedMode ? 0.25 : undefined}
+          scanAreaX={(animatedMode ? (typeof (props as any).forcedRoi === 'object' ? (props as any).forcedRoi.x : 0.25 : undefined)}
           // @ts-ignore
-          scanAreaY={animatedMode ? 0.325 : undefined}
+          scanAreaY={(animatedMode ? (typeof (props as any).forcedRoi === 'object' ? (props as any).forcedRoi.y : 0.325 : undefined)}
           // @ts-ignore
-          scanAreaWidth={animatedMode ? 0.4 : undefined}
+          scanAreaWidth={(animatedMode ? (typeof (props as any).forcedRoi === 'object' ? (props as any).forcedRoi.width : 0.4 : undefined)}
           // @ts-ignore
-          scanAreaHeight={animatedMode ? 0.35 : undefined}
-
-          // ROI / scan area for animated mode (if supported by camera lib)
-          // Use guarded @ts-ignore to avoid TS errors if props don't exist
-          // center area: width 60% height 35%
-          // @ts-ignore
-          scanAreaX={animatedMode ? 0.2 : undefined}
-          // @ts-ignore
-          scanAreaY={animatedMode ? 0.325 : undefined}
-          // @ts-ignore
-          scanAreaWidth={animatedMode ? 0.6 : undefined}
-          // @ts-ignore
-          scanAreaHeight={animatedMode ? 0.35 : undefined}
+          scanAreaHeight={(animatedMode ? (typeof (props as any).forcedRoi === 'object' ? (props as any).forcedRoi.height : 0.35 : undefined)}
           // optionally show a frame in debug builds
           // @ts-ignore
           showFrame={animatedMode ? false : undefined}
