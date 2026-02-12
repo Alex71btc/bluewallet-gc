@@ -35,6 +35,9 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
   animatedMode = false,
   resetFocusWhenMotionDetected,
   scanThrottleDelayMs,
+  // dev-only forced roi
+  // @ts-ignore
+  forcedRoi = null,
 }) => {
   const cameraRef = useRef<CameraApi>(null);
   const [torchMode, setTorchMode] = useState(false);
@@ -171,13 +174,13 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           // Use guarded @ts-ignore to avoid TS errors if props don't exist
           // If a developer-forced ROI is provided (dev runtime override), prefer it.
           // @ts-ignore
-          scanAreaX={(animatedMode ? (typeof (props as any).forcedRoi === 'object' ? (props as any).forcedRoi.x : 0.25 : undefined)}
+          scanAreaX={animatedMode ? (forcedRoi ? forcedRoi.x : 0.25) : undefined}
           // @ts-ignore
-          scanAreaY={(animatedMode ? (typeof (props as any).forcedRoi === 'object' ? (props as any).forcedRoi.y : 0.325 : undefined)}
+          scanAreaY={animatedMode ? (forcedRoi ? forcedRoi.y : 0.325) : undefined}
           // @ts-ignore
-          scanAreaWidth={(animatedMode ? (typeof (props as any).forcedRoi === 'object' ? (props as any).forcedRoi.width : 0.4 : undefined)}
+          scanAreaWidth={animatedMode ? (forcedRoi ? forcedRoi.width : 0.4) : undefined}
           // @ts-ignore
-          scanAreaHeight={(animatedMode ? (typeof (props as any).forcedRoi === 'object' ? (props as any).forcedRoi.height : 0.35 : undefined)}
+          scanAreaHeight={animatedMode ? (forcedRoi ? forcedRoi.height : 0.35) : undefined}
           // optionally show a frame in debug builds
           // @ts-ignore
           showFrame={animatedMode ? false : undefined}
