@@ -124,6 +124,12 @@ const ScanQRCode = () => {
     }
   };
 
+  // Debugging gate (temporary flag)
+  const DEBUG_ANIMATED = false; // set true when you want verbose animated fragment logs
+  const debugCountRef = useRef(0);
+  const DEBUG_MAX = 30; // log first N events for inspection
+
+
   const throttledSetProgress = (have: number, total: number) => {
     const now = Date.now();
     if (now - lastProgressUpdateRef.current > PROGRESS_THROTTLE_MS) {
@@ -285,6 +291,24 @@ useEffect(() => {
   const h = HashIt(ret.data);
   const scannedCache = scannedCacheRef.current;
 
+    // Debug raw fragment details for first N events when enabled
+    if (DEBUG_ANIMATED && debugCountRef.current < DEBUG_MAX) {
+      try {
+        const raw = ret.data || '';
+        const len = raw.length;
+        const head = raw.slice(0, 20).replace(/\n/g, '\\n');
+        const up = raw.toUpperCase();
+        const isURcrypto = up.startsWith('UR:CRYPTO-');
+        const isURbytes = up.startsWith('UR:BYTES');
+        const isBBQR = up.startsWith('B$');
+        // will be set later if enqueued
+        console.debug(`QR RAW: len=${len} head="${head}" urCrypto=${isURcrypto} urBytes=${isURbytes} bbqr=${isBBQR} enq=UNKNOWN`);
+        debugCountRef.current++;
+      } catch (e) {
+        console.debug('QR RAW: debug logging failed: ' + (e?.message || e));
+      }
+    }
+
     if (scannedCache[h]) {
       // schon gesehen → nicht nochmal decoden
       return;
@@ -315,6 +339,11 @@ useEffect(() => {
         q.shift(); // drop oldest
       }
       peakQueueRef.current = Math.max(peakQueueRef.current, q.length);
+      // debug: log enqueue
+      if (DEBUG_ANIMATED && debugCountRef.current < DEBUG_MAX) {
+        console.debug(`QR RAW: len=${ret.data.length} head="${ret.data.slice(0,20)}" urCrypto=${up.startsWith('UR:CRYPTO-')} urBytes=${up.startsWith('UR:BYTES')} bbqr=${up.startsWith('B$')} enq=true`);
+        debugCountRef.current++;
+      }
       // ensure firstAttempt timestamp
       if (!perfRef.current.firstAttemptAt) perfRef.current.firstAttemptAt = now;
       // start worker async without blocking
@@ -406,6 +435,11 @@ useEffect(() => {
   };
 
   const handleReadCode = (event: any) => {
+    // debug which nativeEvent field we use
+    if (DEBUG_ANIMATED && debugCountRef.current < DEBUG_MAX) {
+      const used = event?.nativeEvent?.codeStringValue ? 'codeStringValue' : 'missing';
+      console.debug(`QR RAW FIELD: using=${used} nativeEvent keys=${Object.keys(event?.nativeEvent || {}).join(',')}`);
+    }
     onBarCodeRead({ data: event?.nativeEvent?.codeStringValue });
   };
 
