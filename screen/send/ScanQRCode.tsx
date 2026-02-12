@@ -255,6 +255,26 @@ const ScanQRCode = () => {
         setAnimatedMode(true);
       }
     } catch (e) {}
+
+    // DEV: runtime override for camera props to speed iteration without reinstall
+    if (__DEV__) {
+      try {
+        const devForce = {
+          scanThrottleDelayMs: 300,
+          forceRoi: { x: 0.25, y: 0.325, width: 0.4, height: 0.35 },
+        };
+        // @ts-ignore
+        setScanThrottleDelayMs?.(devForce.scanThrottleDelayMs);
+        // @ts-ignore
+        setAnimatedMode(true);
+        // store forced roi in a ref consumable by CameraScreen via props (we use setScanArea override prop)
+        // @ts-ignore
+        setForcedRoi && setForcedRoi(devForce.forceRoi);
+        console.debug('DEV QR: runtime camera override applied', devForce);
+      } catch (e) {
+        // swallow
+      }
+    }
   }, []);
 useEffect(() => {
   return () => {
