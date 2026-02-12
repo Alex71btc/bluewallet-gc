@@ -111,11 +111,12 @@ const ScanQRCode = () => {
   const QUEUE_CAP = 20;
   const DEDUPE_TTL_MS = 2000;
 
-  const makeDedupeKey = (s: string) => s.slice(0, 32) + '|' + s.length;
+  // Use full raw string as dedupe key for UR/BBQR to avoid collisions
+  const makeDedupeKey = (s: string) => s;
 
   const cleanupDedupeIfNeeded = () => {
     const map = dedupeMapRef.current;
-    if (map.size > 100) {
+    if (map.size > 200) {
       const now = Date.now();
       for (const [k, ts] of map.entries()) {
         if (now - ts > DEDUPE_TTL_MS) map.delete(k);
