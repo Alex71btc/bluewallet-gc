@@ -167,7 +167,7 @@ const ScanQRCode = () => {
   const repeatsTotalRef = useRef(0);
   const maxSameStreakRef = useRef(0);
   const uniquePartsSetRef = useRef<Set<string>>(new Set());
-  const JS_DUPLICATE_MS = 150; // increased throttle for identical raw (ms)
+  const JS_DUPLICATE_MS = 200; // increased throttle for identical raw (ms)
   const DUPLICATE_WINDOW_TTL = 1000; // ms: if raw in seenSet and within this window, drop
   const SAME_STREAK_LIMIT = 6;
   const SAME_STREAK_COOLDOWN_MS = 250;
