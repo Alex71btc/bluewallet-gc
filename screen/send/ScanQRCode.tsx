@@ -248,6 +248,13 @@ const ScanQRCode = () => {
   useEffect(() => {
     isCameraAuthorizationStatusGranted().then(setCameraStatusGranted);
     perfRef.current.t0 = Date.now();
+    // Auto-enable animatedMode for multisig / watch-only flows based on launchedBy heuristic
+    try {
+      const l = String(launchedBy || '').toLowerCase();
+      if (l.includes('send') || l.includes('multisig') || l.includes('watch') || l.includes('psbt') || l.includes('sign')) {
+        setAnimatedMode(true);
+      }
+    } catch (e) {}
   }, []);
 useEffect(() => {
   return () => {
