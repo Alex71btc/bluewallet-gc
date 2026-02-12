@@ -631,6 +631,11 @@ useEffect(() => {
           onFilePickerButtonPress={showFilePicker}
           onImagePickerButtonPress={onShowImagePickerButtonPress}
           onCancelButtonPress={dismiss}
+          // pass forced props explicitly so CameraScreen receives them
+          // @ts-ignore
+          scanThrottleDelayMs={typeof (global as any).forcedScanThrottle === 'number' ? (global as any).forcedScanThrottle : (sessionThrottleOverride !== undefined ? sessionThrottleOverride : (animatedMode ? 300 : 0))}
+          // @ts-ignore
+          forcedRoi={typeof (global as any).forcedRoi === 'object' ? (global as any).forcedRoi : (animatedMode ? { x: 0.25, y: 0.325, width: 0.4, height: 0.35 } : null)}
           onPreviewReady={() => {
             // record preview ready timestamp once
             if (!perfRef.current.previewReady) {
