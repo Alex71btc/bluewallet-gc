@@ -158,7 +158,8 @@ const ScanQRCode = () => {
               const firstSuccess = perfRef.current.firstSuccessAt;
               const partsProcessed = partsProcessedRef.current;
               const peakQueue = peakQueueRef.current;
-              console.debug(`QR PERF SUMMARY: t0=${t0} t2=${t2} firstAttempt=${firstAttempt} firstSuccess=${firstSuccess} partsProcessed=${partsProcessed} peakQueue=${peakQueue}`);
+              const ms_after_preview = t2 && firstSuccess ? (firstSuccess - t2) : 0;
+              console.debug(`QR PERF SUMMARY: t0=${t0} t2=${t2} firstAttempt=${firstAttempt} firstSuccess=${firstSuccess} ms_after_preview=${ms_after_preview} partsProcessed=${partsProcessed} peakQueue=${peakQueue}`);
 
               if (launchedBy) {
                 const merge = true;
