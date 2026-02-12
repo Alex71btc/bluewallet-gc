@@ -129,6 +129,21 @@ const ScanQRCode = () => {
     }
   };
 
+  // Throttle sweep (debug) - test different camera throttle values
+  const DEBUG_THROTTLE_SWEEP = false; // set true to auto-pick from array for testing
+  const THROTTLE_SWEEP_VALUES = [0, 15, 30, 50, 80];
+  const selectThrottleForSession = () => {
+    if (!DEBUG_THROTTLE_SWEEP) return undefined;
+    const idx = Math.floor(Date.now() / 1000) % THROTTLE_SWEEP_VALUES.length;
+    return THROTTLE_SWEEP_VALUES[idx];
+  };
+  const sessionThrottleOverride = selectThrottleForSession();
+
+  // per-second accepted/unique counters
+  const acceptedThisSecondRef = useRef(0);
+  const uniqueThisSecondRef = useRef(0);
+  const lastSecondRef = useRef(Math.floor(Date.now() / 1000));
+
   // Debugging gate (temporary flag)
   const DEBUG_ANIMATED = false; // set true when you want verbose animated fragment logs
   const debugCountRef = useRef(0);
@@ -323,9 +338,17 @@ useEffect(() => {
       const repeats = repeatsTotalRef.current;
       const streak = maxSameStreakRef.current;
       const attempts = perfRef.current.attempts;
-      console.debug(`QR PERF: attempts/sec=${attempts} unique=${unique} repeats=${repeats} streak=${streak} t0=${perfRef.current.t0}`);
+      const accepted = acceptedThisSecondRef.current;
+      const uniqueThisSecond = uniqueThisSecondRef.current;
+      const droppedSameStreak = droppedSameStreakCountRef.current;
+      const droppedDuplicateWindow = droppedDuplicateWindowCountRef.current;
+      const effectiveThrottle = (sessionThrottleOverride !== undefined) ? sessionThrottleOverride : (animatedMode ? 80 : 0);
+      console.debug(`QR PERF: attempts/sec=${attempts} unique=${unique} repeats=${repeats} streak=${streak} acceptedThisSec=${accepted} uniqueThisSec=${uniqueThisSecond} droppedSameStreak=${droppedSameStreak} droppedDupWindow=${droppedDuplicateWindow} scanThrottleDelayMs=${effectiveThrottle} t0=${perfRef.current.t0}`);
+      // reset per-second counters
       perfRef.current.attempts = 0;
       perfRef.current.lastFlush = now;
+      acceptedThisSecondRef.current = 0;
+      uniqueThisSecondRef.current = 0;
     }
 
   const h = HashIt(ret.data);
@@ -437,6 +460,9 @@ useEffect(() => {
       if (!perfRef.current.firstAttemptAt) perfRef.current.firstAttemptAt = now;
       // mark animated mode for this session
       setAnimatedMode(true);
+      // track accepted/dropped counters for telemetry
+      acceptedThisSecondRef.current++;
+      uniqueThisSecondRef.current += uniquePartsSetRef.current.has(ret.data) ? 0 : 1;
       // start worker async without blocking
       setTimeout(() => workerLoop(), 0);
       return;
