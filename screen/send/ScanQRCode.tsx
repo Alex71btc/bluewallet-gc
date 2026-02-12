@@ -100,6 +100,92 @@ const ScanQRCode = () => {
   });
   const lockedRef = useRef(false);
 
+  // Patch B: Backpressure + dedupe + UI batching for animated UR/BBQR
+  const pendingPartsQueueRef = useRef<string[]>([]);
+  const processingRef = useRef(false);
+  const dedupeMapRef = useRef<Map<string, number>>(new Map());
+  const peakQueueRef = useRef(0);
+  const lastProgressUpdateRef = useRef(0);
+  const partsProcessedRef = useRef(0);
+  const PROGRESS_THROTTLE_MS = 200; // default
+  const QUEUE_CAP = 20;
+  const DEDUPE_TTL_MS = 2000;
+
+  const makeDedupeKey = (s: string) => s.slice(0, 32) + '|' + s.length;
+
+  const cleanupDedupeIfNeeded = () => {
+    const map = dedupeMapRef.current;
+    if (map.size > 100) {
+      const now = Date.now();
+      for (const [k, ts] of map.entries()) {
+        if (now - ts > DEDUPE_TTL_MS) map.delete(k);
+      }
+    }
+  };
+
+  const throttledSetProgress = (have: number, total: number) => {
+    const now = Date.now();
+    if (now - lastProgressUpdateRef.current > PROGRESS_THROTTLE_MS) {
+      lastProgressUpdateRef.current = now;
+      setUrTotal(total);
+      setUrHave(have);
+    }
+  };
+
+  const workerLoop = async () => {
+    if (processingRef.current) return;
+    processingRef.current = true;
+    try {
+      while (pendingPartsQueueRef.current.length > 0 && !lockedRef.current) {
+        const batchCount = Math.min(2, pendingPartsQueueRef.current.length);
+        for (let i = 0; i < batchCount; i++) {
+          const part = pendingPartsQueueRef.current.shift() as string;
+          partsProcessedRef.current++;
+          try {
+            if (!decoder) decoder = new BlueURDecoder();
+            decoder.receivePart(part);
+            // throttle progress updates
+            const have = Math.floor(decoder.estimatedPercentComplete() * 100);
+            throttledSetProgress(have, 100);
+            if (decoder.isComplete()) {
+              const data = decoder.toString();
+              decoder = undefined;
+              // success -- log summary
+              perfRef.current.firstSuccessAt = perfRef.current.firstSuccessAt || Date.now();
+              const t0 = perfRef.current.t0;
+              const t2 = perfRef.current.previewReady;
+              const firstAttempt = perfRef.current.firstAttemptAt;
+              const firstSuccess = perfRef.current.firstSuccessAt;
+              const partsProcessed = partsProcessedRef.current;
+              const peakQueue = peakQueueRef.current;
+              console.debug(`QR PERF SUMMARY: t0=${t0} t2=${t2} firstAttempt=${firstAttempt} firstSuccess=${firstSuccess} partsProcessed=${partsProcessed} peakQueue=${peakQueue}`);
+
+              if (launchedBy) {
+                const merge = true;
+                const popToAction = StackActions.popTo(launchedBy, { onBarScanned: data }, { merge });
+                if (onBarScanned) onBarScanned(data, useBBQRRef.current);
+                // lock before navigation
+                lockedRef.current = true;
+                navigation.dispatch(popToAction);
+              }
+              // we're done
+              processingRef.current = false;
+              return;
+            }
+          } catch (e: any) {
+            // ignore malformed parts, continue
+            console.log('Invalid animated qr code fragment (worker): ' + (e?.message || e));
+          }
+        }
+        // yield to UI / allow other JS tasks
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise(r => setTimeout(r, 0));
+      }
+    } finally {
+      processingRef.current = false;
+    }
+  };
+
   useEffect(() => {
     isCameraAuthorizationStatusGranted().then(setCameraStatusGranted);
     perfRef.current.t0 = Date.now();
@@ -208,27 +294,47 @@ useEffect(() => {
       return;
     }
 
-    if (ret.data.toUpperCase().startsWith('UR:CRYPTO-ACCOUNT')) {
-      return _onReadUniformResourceV2(ret.data);
+    // Animated UR/BBQR -> enqueue and process with backpressure
+    const up = ret.data.toUpperCase();
+    if (up.startsWith('UR:CRYPTO-ACCOUNT') || up.startsWith('UR:CRYPTO-PSBT') || up.startsWith('UR:CRYPTO-OUTPUT') || up.startsWith('B$')) {
+      if (up.startsWith('B$')) useBBQRRef.current = true;
+      const now = Date.now();
+      const key = makeDedupeKey(ret.data);
+      const last = dedupeMapRef.current.get(key) || 0;
+      if (now - last < DEDUPE_TTL_MS) {
+        // recently seen, ignore
+        return;
+      }
+      dedupeMapRef.current.set(key, now);
+      cleanupDedupeIfNeeded();
+      const q = pendingPartsQueueRef.current;
+      q.push(ret.data);
+      if (q.length > QUEUE_CAP) {
+        q.shift(); // drop oldest
+      }
+      peakQueueRef.current = Math.max(peakQueueRef.current, q.length);
+      // ensure firstAttempt timestamp
+      if (!perfRef.current.firstAttemptAt) perfRef.current.firstAttemptAt = now;
+      // start worker async without blocking
+      setTimeout(() => workerLoop(), 0);
+      return;
     }
 
-    if (ret.data.toUpperCase().startsWith('UR:CRYPTO-PSBT')) {
-      return _onReadUniformResourceV2(ret.data);
-    }
-
-    if (ret.data.toUpperCase().startsWith('UR:CRYPTO-OUTPUT')) {
-      return _onReadUniformResourceV2(ret.data);
-    }
-
-    if (ret.data.toUpperCase().startsWith('B$')) {
-      useBBQRRef.current = true;
-      return _onReadUniformResourceV2(ret.data);
-    }
-
-    if (ret.data.toUpperCase().startsWith('UR:BYTES')) {
+    if (up.startsWith('UR:BYTES')) {
       const splitted = ret.data.split('/');
       if (splitted.length === 3 && splitted[1].includes('-')) {
-        return _onReadUniformResourceV2(ret.data);
+        const now = Date.now();
+        const key = makeDedupeKey(ret.data);
+        const last = dedupeMapRef.current.get(key) || 0;
+        if (now - last < DEDUPE_TTL_MS) return;
+        dedupeMapRef.current.set(key, now);
+        cleanupDedupeIfNeeded();
+        pendingPartsQueueRef.current.push(ret.data);
+        if (pendingPartsQueueRef.current.length > QUEUE_CAP) pendingPartsQueueRef.current.shift();
+        peakQueueRef.current = Math.max(peakQueueRef.current, pendingPartsQueueRef.current.length);
+        if (!perfRef.current.firstAttemptAt) perfRef.current.firstAttemptAt = now;
+        setTimeout(() => workerLoop(), 0);
+        return;
       }
     }
 
