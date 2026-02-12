@@ -163,9 +163,9 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
             animatedMode ? true : (resetFocusWhenMotionDetected ?? false)
           }
 
-          // scanThrottleDelay: allow prop; if animatedMode and no explicit prop, use 15ms to reduce duplicates
+          // scanThrottleDelay: allow prop; if animatedMode and no explicit prop, use higher default (80ms) to reduce duplicates
           // @ts-ignore
-          scanThrottleDelay={animatedMode ? (typeof scanThrottleDelayMs === 'number' ? scanThrottleDelayMs : 15) : (scanThrottleDelayMs ?? 0)}  // ms
+          scanThrottleDelay={animatedMode ? (typeof scanThrottleDelayMs === 'number' ? scanThrottleDelayMs : 80) : (scanThrottleDelayMs ?? 0)}  // ms
 
           // notify when preview/camera is initialized and preview frames start
           // some Camera lib variants expose onInitialized / onCameraReady

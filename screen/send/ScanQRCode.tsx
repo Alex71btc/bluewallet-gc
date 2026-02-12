@@ -112,6 +112,10 @@ const ScanQRCode = () => {
   const QUEUE_CAP = 20;
   const DEDUPE_TTL_MS = 2000;
 
+  // additional drop counters
+  const droppedSameStreakCountRef = useRef(0);
+  const droppedDuplicateWindowCountRef = useRef(0);
+
   // Use full raw string as dedupe key for UR/BBQR to avoid collisions
   const makeDedupeKey = (s: string) => s;
 
@@ -148,7 +152,8 @@ const ScanQRCode = () => {
   const repeatsTotalRef = useRef(0);
   const maxSameStreakRef = useRef(0);
   const uniquePartsSetRef = useRef<Set<string>>(new Set());
-  const JS_DUPLICATE_MS = 80; // default acceptance throttle for identical raw
+  const JS_DUPLICATE_MS = 150; // increased throttle for identical raw (ms)
+  const DUPLICATE_WINDOW_TTL = 1000; // ms: if raw in seenSet and within this window, drop
   const SAME_STREAK_LIMIT = 6;
   const SAME_STREAK_COOLDOWN_MS = 250;
 
@@ -351,6 +356,16 @@ useEffect(() => {
       // if in cooldown, drop identical
       if (cooldownUntilRef.current && now2 < cooldownUntilRef.current && raw === lastAcceptedRawRef.current) {
         repeatsTotalRef.current++;
+        // track droppedSameStreakCount
+        // @ts-ignore
+        droppedSameStreakCountRef.current = (droppedSameStreakCountRef.current || 0) + 1;
+        return;
+      }
+      // if raw already seen recently, drop
+      if (uniquePartsSetRef.current.has(raw) && lastAcceptedAtRef.current && now2 - lastAcceptedAtRef.current < DUPLICATE_WINDOW_TTL) {
+        repeatsTotalRef.current++;
+        // @ts-ignore
+        droppedDuplicateWindowCountRef.current = (droppedDuplicateWindowCountRef.current || 0) + 1;
         return;
       }
       if (raw === lastAcceptedRawRef.current) {
@@ -362,6 +377,8 @@ useEffect(() => {
             cooldownUntilRef.current = now2 + SAME_STREAK_COOLDOWN_MS;
             // drop this and subsequent identical parts during cooldown
             repeatsTotalRef.current++;
+            // @ts-ignore
+            droppedSameStreakCountRef.current = (droppedSameStreakCountRef.current || 0) + 1;
             return;
           }
           return; // drop quick duplicate
