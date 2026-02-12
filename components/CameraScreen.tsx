@@ -169,6 +169,18 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
 
           // ROI / scan area for animated mode (if supported by camera lib)
           // Use guarded @ts-ignore to avoid TS errors if props don't exist
+          // center area: width 50% height 35%
+          // @ts-ignore
+          scanAreaX={animatedMode ? 0.25 : undefined}
+          // @ts-ignore
+          scanAreaY={animatedMode ? 0.325 : undefined}
+          // @ts-ignore
+          scanAreaWidth={animatedMode ? 0.5 : undefined}
+          // @ts-ignore
+          scanAreaHeight={animatedMode ? 0.35 : undefined}
+
+          // ROI / scan area for animated mode (if supported by camera lib)
+          // Use guarded @ts-ignore to avoid TS errors if props don't exist
           // center area: width 60% height 35%
           // @ts-ignore
           scanAreaX={animatedMode ? 0.2 : undefined}
