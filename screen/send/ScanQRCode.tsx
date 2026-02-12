@@ -314,7 +314,11 @@ useEffect(() => {
     const now = Date.now();
     if (!perfRef.current.firstAttemptAt) perfRef.current.firstAttemptAt = now;
     if (now - perfRef.current.lastFlush > 1000) {
-      console.debug(`QR PERF: attempts/sec=${perfRef.current.attempts} t0=${perfRef.current.t0}`);
+      const unique = uniquePartsSetRef.current.size;
+      const repeats = repeatsTotalRef.current;
+      const streak = maxSameStreakRef.current;
+      const attempts = perfRef.current.attempts;
+      console.debug(`QR PERF: attempts/sec=${attempts} unique=${unique} repeats=${repeats} streak=${streak} t0=${perfRef.current.t0}`);
       perfRef.current.attempts = 0;
       perfRef.current.lastFlush = now;
     }
