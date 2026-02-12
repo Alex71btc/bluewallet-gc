@@ -248,6 +248,12 @@ const ScanQRCode = () => {
   useEffect(() => {
     isCameraAuthorizationStatusGranted().then(setCameraStatusGranted);
     perfRef.current.t0 = Date.now();
+    // Log BUILD_INFO for easy verification of running bundle
+    try {
+      const info = { commit: 'bot/qr-speed', branch: 'bot/qr-speed' };
+      console.info('BUILD_INFO ' + JSON.stringify(info));
+    } catch (e) {}
+
     // Auto-enable animatedMode for multisig / watch-only flows based on launchedBy heuristic
     try {
       const l = String(launchedBy || '').toLowerCase();
@@ -256,24 +262,21 @@ const ScanQRCode = () => {
       }
     } catch (e) {}
 
-    // DEV: runtime override for camera props to speed iteration without reinstall
-    if (__DEV__) {
-      try {
-        const devForce = {
-          scanThrottleDelayMs: 300,
-          forceRoi: { x: 0.25, y: 0.325, width: 0.4, height: 0.35 },
-        };
-        // @ts-ignore
-        setScanThrottleDelayMs?.(devForce.scanThrottleDelayMs);
-        // @ts-ignore
-        setAnimatedMode(true);
-        // store forced roi in a ref consumable by CameraScreen via props (we use setScanArea override prop)
-        // @ts-ignore
-        setForcedRoi && setForcedRoi(devForce.forceRoi);
-        console.debug('DEV QR: runtime camera override applied', devForce);
-      } catch (e) {
-        // swallow
-      }
+    // Force runtime override for camera props to speed iteration (ungated)
+    try {
+      const devForce = {
+        scanThrottleDelayMs: 300,
+        forceRoi: { x: 0.25, y: 0.325, width: 0.4, height: 0.35 },
+      };
+      // @ts-ignore
+      setScanThrottleDelayMs?.(devForce.scanThrottleDelayMs);
+      // @ts-ignore
+      setAnimatedMode(true);
+      // @ts-ignore
+      setForcedRoi && setForcedRoi(devForce.forceRoi);
+      console.info('FORCE QR: runtime camera override applied ' + JSON.stringify(devForce));
+    } catch (e) {
+      // swallow
     }
   }, []);
 useEffect(() => {
