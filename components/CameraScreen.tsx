@@ -165,7 +165,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
 
           // scanThrottleDelay: allow prop; if animatedMode and no explicit prop, use higher default (80ms) to reduce duplicates
           // @ts-ignore
-          scanThrottleDelay={animatedMode ? (typeof scanThrottleDelayMs === 'number' ? scanThrottleDelayMs : 200) : (scanThrottleDelayMs ?? 0)}  // ms
+          scanThrottleDelay={animatedMode ? (typeof scanThrottleDelayMs === 'number' ? scanThrottleDelayMs : 250) : (scanThrottleDelayMs ?? 0)}  // ms
 
           // ROI / scan area for animated mode (if supported by camera lib)
           // Use guarded @ts-ignore to avoid TS errors if props don't exist
@@ -175,7 +175,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           // @ts-ignore
           scanAreaY={animatedMode ? 0.325 : undefined}
           // @ts-ignore
-          scanAreaWidth={animatedMode ? 0.5 : undefined}
+          scanAreaWidth={animatedMode ? 0.45 : undefined}
           // @ts-ignore
           scanAreaHeight={animatedMode ? 0.35 : undefined}
 
