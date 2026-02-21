@@ -93,4 +93,3 @@ fetch-depth: 0
   - name: Finish
     run: |
       echo "Branch pr/qr-scanner-extract pushed to origin/${{ github.event.inputs.target_branch }}."
-
