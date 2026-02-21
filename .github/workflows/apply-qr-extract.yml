@@ -20,7 +20,7 @@ jobs:
 apply-and-push:
 runs-on: ubuntu-latest
 steps:
-  - name: Checkout repository (full history)
+- name: Checkout repository (full history)
 uses: actions/checkout@v4
 with:
 fetch-depth: 0
@@ -64,7 +64,6 @@ fetch-depth: 0
       echo "Patch size (bytes): $(wc -c < "$PATCH_PATH")"
       echo "Patch head (first 30 lines):"
       sed -n '1,30p' "$PATCH_PATH" || true
-      # try git am (keeps metadata) and fall back to git apply
       if git am --3way "$PATCH_PATH"; then
         echo "git am succeeded"
       else
@@ -94,3 +93,4 @@ fetch-depth: 0
   - name: Finish
     run: |
       echo "Branch pr/qr-scanner-extract pushed to origin/${{ github.event.inputs.target_branch }}."
+
