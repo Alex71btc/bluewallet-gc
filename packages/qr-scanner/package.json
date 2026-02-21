@@ -1,0 +1,8 @@
+{
+"name": "@local/qr-scanner",
+"version": "0.0.0-local",
+"main": "index.js",
+"private": true,
+"files": ["blue_modules","components","helpers","screen"],
+"dependencies": {}
+}
