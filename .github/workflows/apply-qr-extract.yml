@@ -1,28 +1,30 @@
-    name: Apply QR scanner extract and push
-    on:
-    workflow_dispatch:
-    inputs:
-    target_branch:
-    description: 'Remote branch to overwrite (default: bot/qr-speed)'
-    required: false
-    default: 'bot/qr-speed'
-    backup_branch:
-    description: 'Remote backup branch name (default: bot/qr-speed-backup)'
-    required: false
-    default: 'bot/qr-speed-backup'
-    patch_path:
-    description: 'Path to patch file in the repo (default: .github/patches/qr-scanner-extract.patch)'
-    required: false
-    default: '.github/patches/qr-scanner-extract.patch'
+name: Apply QR scanner extract and push
+
+on:
+workflow_dispatch:
+inputs:
+target_branch:
+description: 'Remote branch to overwrite (default: bot/qr-speed)'
+required: false
+default: 'bot/qr-speed'
+backup_branch:
+description: 'Remote backup branch name (default: bot/qr-speed-backup)'
+required: false
+default: 'bot/qr-speed-backup'
+patch_path:
+description: 'Path to patch file in the repo (default: .github/patches/qr-scanner-extract.patch)'
+required: false
+default: '.github/patches/qr-scanner-extract.patch'
 
 jobs:
 apply-and-push:
 runs-on: ubuntu-latest
 steps:
-- name: Checkout repository (full history)
+  - name: Checkout repository (full history)
 uses: actions/checkout@v4
 with:
 fetch-depth: 0
+
   - name: Show inputs
     run: |
       echo "target_branch=${{ github.event.inputs.target_branch }}"
@@ -39,25 +41,45 @@ fetch-depth: 0
       TARGET="${{ github.event.inputs.target_branch }}"
       BACKUP="${{ github.event.inputs.backup_branch }}"
       if git ls-remote --exit-code origin "refs/heads/$TARGET"; then
-        git fetch origin $TARGET:$BACKUP || true
+        git fetch origin "$TARGET":"$BACKUP" || true
         echo "Created local backup branch $BACKUP from origin/$TARGET"
-        git push origin $BACKUP || echo "Failed to push backup branch (may already exist)."
+        git push origin "$BACKUP" || echo "Failed to push backup branch (may already exist)."
       else
         echo "origin/$TARGET does not exist; skipping backup."
       fi
 
   - name: Create working branch from master
     run: |
+      git fetch origin master
       git checkout -b pr/qr-scanner-extract origin/master
 
-  - name: Apply patch from repo
+  - name: Debug & apply patch
     run: |
       PATCH_PATH="${{ github.event.inputs.patch_path }}"
+      echo "Patch path: $PATCH_PATH"
       if [ ! -f "$PATCH_PATH" ]; then
         echo "Patch file not found at $PATCH_PATH"
         exit 1
       fi
-      git am --3way "$PATCH_PATH" || { echo "git am failed, trying git apply + commit"; git reset --hard; git checkout -b pr/qr-scanner-extract origin/master; git apply "$PATCH_PATH" && git add . && git commit -m "apply patch: extract qr scanner (from workflow)"; }
+      echo "Patch size (bytes): $(wc -c < "$PATCH_PATH")"
+      echo "Patch head (first 30 lines):"
+      sed -n '1,30p' "$PATCH_PATH" || true
+      # try git am (keeps metadata) and fall back to git apply
+      if git am --3way "$PATCH_PATH"; then
+        echo "git am succeeded"
+      else
+        echo "git am failed; trying git apply fallback"
+        git reset --hard
+        git checkout -b pr/qr-scanner-extract origin/master
+        if git apply "$PATCH_PATH"; then
+          git add .
+          git commit -m "apply patch: extract qr scanner (from workflow fallback)"
+        else
+          echo "git apply also failed — dumping first 200 lines of patch for debug"
+          sed -n '1,200p' "$PATCH_PATH"
+          exit 1
+        fi
+      fi
 
   - name: Show new files added (quick sanity)
     run: |
@@ -69,8 +91,6 @@ fetch-depth: 0
     run: |
       git push --force origin pr/qr-scanner-extract:refs/heads/"${TARGET_BRANCH}"
 
-  - name: Create PR comment URL
+  - name: Finish
     run: |
       echo "Branch pr/qr-scanner-extract pushed to origin/${{ github.event.inputs.target_branch }}."
-      echo "Open a PR on GitHub to review changes or inspect the remote branch directly."
-
