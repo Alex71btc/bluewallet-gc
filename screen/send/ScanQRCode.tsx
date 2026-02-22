@@ -109,10 +109,28 @@ useEffect(() => {
   };
 
   const _onReadUniformResourceV2 = (part: string) => {
-    if (!decoder) decoder = new BlueURDecoder();
     try {
+      const now = Date.now();
+      if (!decoder) {
+        decoder = new BlueURDecoder();
+        // mark start
+        (decoder as any)._perf = { t0: now, partsProcessed: 0, firstAttemptAt: null };
+        console.log(`QR PERF t0=${now} msg=decoder_created`);
+      }
+      // record first attempt timestamp
+      if (!(decoder as any)._perf.firstAttemptAt) {
+        (decoder as any)._perf.firstAttemptAt = now;
+        console.log(`QR PERF firstAttempt=${now}`);
+      }
       decoder.receivePart(part);
+      (decoder as any)._perf.partsProcessed = ((decoder as any)._perf.partsProcessed || 0) + 1;
+      console.log(`QR PERF part_received parts=${(decoder as any)._perf.partsProcessed} est=${decoder.estimatedPercentComplete()}`);
       if (decoder.isComplete()) {
+        const firstSuccessAt = Date.now();
+        const perf = (decoder as any)._perf || {};
+        perf.firstSuccessAt = firstSuccessAt;
+        const ms_after_preview = perf.t0 ? firstSuccessAt - perf.t0 : -1;
+        console.log(`QR PERF SUMMARY t0=${perf.t0} firstAttempt=${perf.firstAttemptAt} firstSuccess=${firstSuccessAt} partsProcessed=${perf.partsProcessed} ms_after_preview=${ms_after_preview}`);
         const data = decoder.toString();
         decoder = undefined; // nullify for future use (?)
         if (launchedBy) {
