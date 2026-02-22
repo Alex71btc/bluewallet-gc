@@ -153,7 +153,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           // ✅ WICHTIG: Animated QR braucht viele Frames / Sekunde
           // Manche no-google Forks haben die Prop, aber die TS-Typen fehlen.
           // @ts-ignore
-          scanThrottleDelay={0}  // testweise 0; wenn zu "nervös", nimm 30 oder 50
+          scanThrottleDelay={30}  // restored sensible default; adjust if needed (ms)
 
           zoom={zoom}
           onZoom={handleZoom}
