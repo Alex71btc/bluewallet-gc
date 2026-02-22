@@ -144,10 +144,28 @@ useEffect(() => {
         }
       } else {
         setUrTotal(100);
-        // quick perceived progress: jump to 90% on first partial receipt to mimic fast UI in PlayStore build,
-        // then follow decoder estimate. This improves perceived speed while decoder finishes.
         const est = Math.floor(decoder.estimatedPercentComplete() * 100);
-        setUrHave(Math.max(90, est));
+        const EXPERIMENT = Boolean((globalThis as any).__QR_SPEED_EXPERIMENT);
+        if (EXPERIMENT) {
+          // start an animated perceived progress that moves quickly to 99% over 800ms
+          // but still allow real estimator to take over if it exceeds the animated value.
+          const target = 99;
+          const duration = 800;
+          const start = Date.now();
+          const startVal = Math.max(est, urHave);
+          const tick = () => {
+            const nowTick = Date.now();
+            const p = Math.min(1, (nowTick - start) / duration);
+            const animated = Math.floor(startVal + (target - startVal) * p);
+            const finalVal = Math.max(animated, est);
+            setUrHave(finalVal);
+            if (p < 1 && finalVal < 100) setTimeout(tick, 50);
+          };
+          // kick off animation (non-blocking)
+          setTimeout(tick, 0);
+        } else {
+          setUrHave(est);
+        }
       }
     } catch (error: any) {
       console.log('Invalid animated qr code fragment: ' + error.message + ' (continuing scanning)');
