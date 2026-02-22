@@ -147,7 +147,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
         resizeMode="cover"
         onReadCode={handleReadCode}
         torchMode={torchMode ? 'on' : 'off'}
-
+      
         // ✅ SPEED: kein Motion-Focus-Reset bei animierten/rotierenden QRs
         resetFocusWhenMotionDetected={false}
 
@@ -159,6 +159,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
         onZoom={handleZoom}
         maxZoom={10}
         onOrientationChange={handleOrientationChange}
+      />
       </View>
       <View style={styles.bottomButtons}>
         <TouchableOpacity onPress={onCancelButtonPress}>
