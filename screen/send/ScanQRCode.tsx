@@ -126,7 +126,10 @@ useEffect(() => {
         }
       } else {
         setUrTotal(100);
-        setUrHave(Math.floor(decoder.estimatedPercentComplete() * 100));
+        // quick perceived progress: jump to 90% on first partial receipt to mimic fast UI in PlayStore build,
+        // then follow decoder estimate. This improves perceived speed while decoder finishes.
+        const est = Math.floor(decoder.estimatedPercentComplete() * 100);
+        setUrHave(Math.max(90, est));
       }
     } catch (error: any) {
       console.log('Invalid animated qr code fragment: ' + error.message + ' (continuing scanning)');
