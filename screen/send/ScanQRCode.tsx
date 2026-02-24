@@ -1,7 +1,7 @@
 import { RouteProp, StackActions, useIsFocused, useRoute } from '@react-navigation/native';
 import * as bitcoin from 'bitcoinjs-lib';
 import { sha256 } from '@noble/hashes/sha256';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import Base43 from '../../blue_modules/base43';
 import * as fs from '../../blue_modules/fs';
@@ -65,7 +65,7 @@ const ScanQRCode = () => {
   const defaultLaunchedBy = previousRoute ? previousRoute.name : undefined;
 
   const { launchedBy = defaultLaunchedBy, showFileImportButton, onBarScanned } = route.params || {};
-  const scannedCacheRef = useRef<Record<string, number>>({});
+  const scannedCache: Record<string, number> = {};
   const { colors } = useTheme();
   const isFocused = useIsFocused();
   const [backdoorPressed, setBackdoorPressed] = useState(0);
@@ -73,7 +73,6 @@ const ScanQRCode = () => {
   const [urHave, setUrHave] = useState(0);
   const [backdoorText, setBackdoorText] = useState('');
   const [backdoorVisible, setBackdoorVisible] = useState(false);
-  const useBBQRRef = useRef(false);
   const [animatedQRCodeData, setAnimatedQRCodeData] = useState<Record<string, string>>({});
   const [cameraStatusGranted, setCameraStatusGranted] = useState<boolean | undefined>(undefined);
   const stylesHook = StyleSheet.create({
@@ -92,61 +91,30 @@ const ScanQRCode = () => {
   useEffect(() => {
     isCameraAuthorizationStatusGranted().then(setCameraStatusGranted);
   }, []);
-useEffect(() => {
-  return () => {
-    // cleanup beim Verlassen des Screens
-    scannedCacheRef.current = {};
-    decoder = undefined;
-    useBBQRRef.current = false;
-    setAnimatedQRCodeData({});
-    setUrHave(0);
-    setUrTotal(0);
-  };
-}, []);
 
   const HashIt = function (s: string): string {
     return uint8ArrayToHex(sha256(s));
   };
 
   const _onReadUniformResourceV2 = (part: string) => {
+    if (!decoder) decoder = new BlueURDecoder();
     try {
-      const now = Date.now();
-      if (!decoder) {
-        decoder = new BlueURDecoder();
-        // mark start
-        (decoder as any)._perf = { t0: now, partsProcessed: 0, firstAttemptAt: null };
-        console.log(`QR PERF t0=${now} msg=decoder_created`);
-      }
-      // record first attempt timestamp
-      if (!(decoder as any)._perf.firstAttemptAt) {
-        (decoder as any)._perf.firstAttemptAt = now;
-        console.log(`QR PERF firstAttempt=${now}`);
-      }
       decoder.receivePart(part);
-      (decoder as any)._perf.partsProcessed = ((decoder as any)._perf.partsProcessed || 0) + 1;
-      console.log(`QR PERF part_received parts=${(decoder as any)._perf.partsProcessed} est=${decoder.estimatedPercentComplete()}`);
       if (decoder.isComplete()) {
-        const firstSuccessAt = Date.now();
-        const perf = (decoder as any)._perf || {};
-        perf.firstSuccessAt = firstSuccessAt;
-        const ms_after_preview = perf.t0 ? firstSuccessAt - perf.t0 : -1;
-        console.log(`QR PERF SUMMARY t0=${perf.t0} firstAttempt=${perf.firstAttemptAt} firstSuccess=${firstSuccessAt} partsProcessed=${perf.partsProcessed} ms_after_preview=${ms_after_preview}`);
         const data = decoder.toString();
         decoder = undefined; // nullify for future use (?)
         if (launchedBy) {
           const merge = true;
           const popToAction = StackActions.popTo(launchedBy, { onBarScanned: data }, { merge });
           if (onBarScanned) {
-            onBarScanned(data, useBBQRRef.current);
+            onBarScanned(data);
           }
 
           navigation.dispatch(popToAction);
         }
       } else {
         setUrTotal(100);
-        const est = Math.floor(decoder.estimatedPercentComplete() * 100);
-        // restore original behavior: use estimator directly (no forced 90%/animation)
-        setUrHave(est);
+        setUrHave(Math.floor(decoder.estimatedPercentComplete() * 100));
       }
     } catch (error: any) {
       console.log('Invalid animated qr code fragment: ' + error.message + ' (continuing scanning)');
@@ -178,7 +146,7 @@ useEffect(() => {
           const merge = true;
           const popToAction = StackActions.popTo(launchedBy, { onBarScanned: data }, { merge });
           if (onBarScanned) {
-            onBarScanned(data, useBBQRRef.current);
+            onBarScanned(data);
           }
 
           navigation.dispatch(popToAction);
@@ -192,14 +160,12 @@ useEffect(() => {
   };
 
   const onBarCodeRead = (ret: { data: string }) => {
-  const h = HashIt(ret.data);
-  const scannedCache = scannedCacheRef.current;
-
+    const h = HashIt(ret.data);
     if (scannedCache[h]) {
-      // schon gesehen → nicht nochmal decoden
+      // this QR was already scanned by this ScanQRCode, lets prevent firing duplicate callbacks
       return;
     }
-    scannedCache[h] = Date.now();
+    scannedCache[h] = +new Date();
 
     if (ret.data.toUpperCase().startsWith('UR:CRYPTO-ACCOUNT')) {
       return _onReadUniformResourceV2(ret.data);
@@ -210,11 +176,6 @@ useEffect(() => {
     }
 
     if (ret.data.toUpperCase().startsWith('UR:CRYPTO-OUTPUT')) {
-      return _onReadUniformResourceV2(ret.data);
-    }
-
-    if (ret.data.toUpperCase().startsWith('B$')) {
-      useBBQRRef.current = true;
       return _onReadUniformResourceV2(ret.data);
     }
 
@@ -239,7 +200,7 @@ useEffect(() => {
         const merge = true;
         const popToAction = StackActions.popTo(launchedBy, { onBarScanned: data }, { merge });
         if (onBarScanned) {
-          onBarScanned(data, useBBQRRef.current);
+          onBarScanned(data);
         }
         navigation.dispatch(popToAction);
       }
@@ -252,7 +213,7 @@ useEffect(() => {
 
           const popToAction = StackActions.popTo(launchedBy, { onBarScanned: ret.data }, { merge });
           if (onBarScanned) {
-            onBarScanned(ret.data, useBBQRRef.current);
+            onBarScanned(ret.data);
           }
 
           navigation.dispatch(popToAction);
