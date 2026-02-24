@@ -123,3 +123,4 @@ android/app/src/debug/res/
 
 # lockfiles
 yarn.lock
+qr-test.log
