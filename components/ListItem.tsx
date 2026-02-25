@@ -62,6 +62,9 @@ const ListItem: React.FC<ListItemProps> = React.memo(
         fontWeight: '500',
         writingDirection: direction,
       },
+      rightMemoText: {
+        textAlign: direction === 'rtl' ? 'left' : 'right',
+      },
       subtitle: {
         flexWrap: 'wrap',
         writingDirection: direction,
@@ -70,6 +73,7 @@ const ListItem: React.FC<ListItemProps> = React.memo(
         paddingVertical: switchProps ? 8 : 0,
         lineHeight: 20,
         fontSize: 14,
+        marginTop: 2,
       },
 
       containerStyle: {
@@ -89,26 +93,30 @@ const ListItem: React.FC<ListItemProps> = React.memo(
             <View style={styles.width16} />
           </>
         )}
-        <RNElementsListItem.Content>
-          <RNElementsListItem.Title style={stylesHook.title} numberOfLines={0} accessible={switchProps === undefined}>
-            {title}
-          </RNElementsListItem.Title>
-          {subtitle && (
-            <RNElementsListItem.Subtitle
-              numberOfLines={switchProps ? 0 : (subtitleNumberOfLines ?? 1)}
-              accessible={switchProps === undefined}
-              style={stylesHook.subtitle}
-            >
-              {subtitle}
-            </RNElementsListItem.Subtitle>
-          )}
-        </RNElementsListItem.Content>
+        <View style={styles.leftContentWrapper}>
+          <RNElementsListItem.Content style={styles.leftContent}>
+            <RNElementsListItem.Title style={stylesHook.title} numberOfLines={0} accessible={switchProps === undefined}>
+              {title}
+            </RNElementsListItem.Title>
+            {subtitle && (
+              <RNElementsListItem.Subtitle
+                numberOfLines={switchProps ? 0 : (subtitleNumberOfLines ?? 1)}
+                accessible={switchProps === undefined}
+                style={stylesHook.subtitle}
+              >
+                {subtitle}
+              </RNElementsListItem.Subtitle>
+            )}
+          </RNElementsListItem.Content>
+        </View>
 
         {rightTitle && (
-          <View style={styles.margin8}>
-            <RNElementsListItem.Title style={rightTitleStyle} numberOfLines={0}>
+          <View style={{ marginStart: 8 }}>
+            <RNElementsListItem.Title style={rightTitleStyle} numberOfLines={1}>
               {rightTitle}
             </RNElementsListItem.Title>
+          </View>
+        )}
           </View>
         )}
         {chevron && <RNElementsListItem.Chevron iconStyle={{ transform: [{ scaleX: direction === 'rtl' ? -1 : 1 }] }} />}
@@ -146,11 +154,36 @@ const ListItem: React.FC<ListItemProps> = React.memo(
 export default ListItem;
 
 const styles = StyleSheet.create({
-  margin8: {
-    margin: 8,
-  },
   margin16: {
     marginLeft: 16,
   },
   width16: { width: 16 },
+
+  leftContentWrapper: {
+    flexGrow: 0,
+    flexShrink: 0,
+    alignSelf: 'stretch',
+    justifyContent: 'flex-end',
+  },
+  leftContent: {
+    flex: 0,
+  },
+  rightColumnMargin: {
+    marginStart: 8,
+  },
+  rightColumn: {
+    flex: 1,
+    minWidth: 0,
+    justifyContent: 'flex-end',
+  },
+  rightColumnStack: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    minWidth: 0,
+  },
+  rightMemoWrapper: {
+    flexShrink: 1,
+    minWidth: 0,
+    alignSelf: 'stretch',
+  },
 });
