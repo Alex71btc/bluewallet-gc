@@ -96,3 +96,4 @@ android/app/.classpath
 android/app/.project
 fastlane/README.md
 fastlane/report.xml
+android/app/google-services.json
