@@ -77,6 +77,13 @@ android {
         noCompress += ["bundle"]
     }
 
+    // ✅ add this (fix for extractNativeLibs=true warning)
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -92,7 +99,16 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         missingDimensionStrategy "react-native-capture-protection", "fullMediaCapture"
     }
-
+    signingConfigs {
+        release {
+            if (project.hasProperty('RELEASE_STORE_FILE')) {
+                storeFile file(RELEASE_STORE_FILE)
+                storePassword RELEASE_STORE_PASSWORD
+                keyAlias RELEASE_KEY_ALIAS
+                keyPassword RELEASE_KEY_PASSWORD
+            }
+        }
+    }
     lintOptions {
         abortOnError false
         checkReleaseBuilds false
@@ -106,6 +122,8 @@ android {
 
     buildTypes {
         release {
+            // ✅ add this
+            signingConfig signingConfigs.release
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
             minifyEnabled enableProguardInReleaseBuilds
