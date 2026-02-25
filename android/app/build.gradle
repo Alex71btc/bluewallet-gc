@@ -91,11 +91,11 @@ android {
     namespace "io.bluewallet.bluewallet"
 
     defaultConfig {
-        applicationId "io.bluewallet.bluewalletgc"
+        applicationId "io.bluewallet.bluewalletgc726"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 726001
-        versionName "7.2.6"
+        versionName "7.2.6-gc"
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         missingDimensionStrategy "react-native-capture-protection", "fullMediaCapture"
@@ -125,9 +125,8 @@ android {
         debug {
             applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
-            resValue "string", "app_name", "BlueWallet GC (Debug)"
+            resValue "string", "app_name", "BlueWallet GC"
         }
-        8e82d47ef (chore(android): update-safe signing + debug suffix + gradle wrapper)
         release {
             // ✅ add this
             signingConfig signingConfigs.release
@@ -136,6 +135,8 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
+            // ✅ add this
+            resValue "string", "app_name", "BlueWallet GC"
         }
     }
 
@@ -157,9 +158,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.compose.ui:ui:1.9.4'
     implementation 'androidx.compose.material3:material3:1.3.2'
-    implementation project(':react-native-camera-kit-no-google')
     implementation 'androidx.preference:preference-ktx:1.2.1'
-    implementation project(':react-native-camera-kit-no-google')
+
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
