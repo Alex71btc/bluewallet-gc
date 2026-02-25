@@ -295,7 +295,9 @@ const WalletsAdd: React.FC = () => {
   useEffect(() => {
     // resetting format of last camera qr scan, in case user will use camera to
     // scan his wallet backup to import wallet
-    resetLastScanWasBBQR();
+   if (typeof resetLastScanWasBBQR === 'function') {
+     resetLastScanWasBBQR();
+   }
 
     getLNDHub()
       .then(url => (url ? setWalletBaseURI(url) : setWalletBaseURI('')))
