@@ -88,18 +88,18 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-namespace "io.bluewallet.bluewallet"
+    namespace "io.bluewallet.bluewallet"
 
-defaultConfig {
-    applicationId "io.bluewallet.bluewalletgc"
-    minSdkVersion rootProject.ext.minSdkVersion
-    targetSdkVersion rootProject.ext.targetSdkVersion
-    versionCode 726001
-    versionName "7.2.6"
-    testBuildType System.getProperty('testBuildType', 'debug')
-    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-    missingDimensionStrategy "react-native-capture-protection", "fullMediaCapture"
-}
+    defaultConfig {
+        applicationId "io.bluewallet.bluewalletgc"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 726001
+        versionName "7.2.6"
+        testBuildType System.getProperty('testBuildType', 'debug')
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        missingDimensionStrategy "react-native-capture-protection", "fullMediaCapture"
+    }
     signingConfigs {
         release {
             if (project.hasProperty('RELEASE_STORE_FILE')) {
@@ -123,8 +123,11 @@ defaultConfig {
 
     buildTypes {
         debug {
-        applicationIdSuffix ".debug"
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+            resValue "string", "app_name", "BlueWallet GC (Debug)"
         }
+        8e82d47ef (chore(android): update-safe signing + debug suffix + gradle wrapper)
         release {
             // ✅ add this
             signingConfig signingConfigs.release
