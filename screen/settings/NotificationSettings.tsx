@@ -194,29 +194,35 @@ const NotificationSettings: React.FC = () => {
     setIsLoading(false);
   }, [URI]);
 
-  const renderDeveloperSettings = useCallback(() => {
-    if (tapCount < 10) return null;
+const renderDeveloperSettings = useCallback(() => {
+  const unlocked = tapCount >= 10;
 
-    return (
-      <View>
-        <View style={[styles.divider, { backgroundColor: colors.lightBorder ?? colors.borderTopColor }]} />
-        <SettingsCard style={styles.card}>
-          <View style={styles.cardContent}>
-            <Pressable onPress={handleTap}>
-              <Text style={[styles.multilineText, { color: colors.foregroundColor }]}>{loc.settings.groundcontrol_explanation}</Text>
-            </Pressable>
-          </View>
-        </SettingsCard>
+  return (
+    <View>
+      <View style={[styles.divider, { backgroundColor: colors.lightBorder ?? colors.borderTopColor }]} />
 
-        <SettingsListItem
-          title="github.com/BlueWallet/GroundControl"
-          iconName="github"
-          onPress={() => Linking.openURL('https://github.com/BlueWallet/GroundControl')}
-          chevron
-          position="single"
-          spacingTop
-        />
+      {/* Always visible + tappable to unlock */}
+      <SettingsCard style={styles.card}>
+        <View style={styles.cardContent}>
+          <Pressable onPress={handleTap}>
+            <Text style={[styles.multilineText, { color: colors.foregroundColor }]}>{loc.settings.groundcontrol_explanation}</Text>
+          </Pressable>
 
+          {/* optional debug hint */}
+          {/* <Text style={{ color: colors.alternativeTextColor, marginTop: 6 }}>{tapCount}/10</Text> */}
+        </View>
+      </SettingsCard>
+
+      <SettingsListItem
+        title="github.com/BlueWallet/GroundControl"
+        iconName="github"
+        onPress={() => Linking.openURL('https://github.com/BlueWallet/GroundControl')}
+        chevron
+        position="single"
+        spacingTop
+      />
+
+      {!unlocked ? null : (
         <SettingsCard style={styles.card}>
           <View style={styles.cardContent}>
             <View
@@ -240,12 +246,8 @@ const NotificationSettings: React.FC = () => {
             </View>
 
             <BlueSpacing20 />
-            <Text style={[styles.centered, { color: colors.foregroundColor }]} onPress={() => setTapCount(tapCount + 1)}>
-              ♪ Ground Control to Major Tom ♪
-            </Text>
-            <Text style={[styles.centered, { color: colors.foregroundColor }]} onPress={() => setTapCount(tapCount + 1)}>
-              ♪ Commencing countdown, engines on ♪
-            </Text>
+            <Text style={[styles.centered, { color: colors.foregroundColor }]}>♪ Ground Control to Major Tom ♪</Text>
+            <Text style={[styles.centered, { color: colors.foregroundColor }]}>♪ Commencing countdown, engines on ♪</Text>
 
             <View>
               <CopyToClipboardButton stringToCopy={tokenInfo} displayText={tokenInfo} />
@@ -255,9 +257,10 @@ const NotificationSettings: React.FC = () => {
             <Button onPress={save} title={loc.settings.save} />
           </View>
         </SettingsCard>
-      </View>
-    );
-  }, [tapCount, colors, isLoading, URI, tokenInfo, save]);
+      )}
+    </View>
+  );
+}, [tapCount, colors, isLoading, URI, tokenInfo, save, handleTap]);
 
   const renderPushNotificationsExplanation = useCallback(() => {
     return (
