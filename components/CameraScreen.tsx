@@ -1,7 +1,8 @@
 import { Icon } from '@rneui/base';
 import React, { useRef, useState } from 'react';
 import { Animated, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Camera, CameraApi, CameraType, Orientation } from 'react-native-camera-kit-no-google';
+import { Camera, Orientation } from 'react-native-camera-kit-no-google';
+import type { CameraApi } from 'react-native-camera-kit-no-google';
 import { OnOrientationChangeData, OnReadCodeData } from 'react-native-camera-kit-no-google/dist/CameraProps';
 
 import { isDesktop } from '../blue_modules/environment';
@@ -27,12 +28,13 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
 }) => {
   const cameraRef = useRef<CameraApi>(null);
   const [torchMode, setTorchMode] = useState(false);
-  const [cameraType, setCameraType] = useState(CameraType.Back);
+  type TCameraType = 'back' | 'front';
+  const [cameraType, setCameraType] = useState<TCameraType>('back');
   const [zoom, setZoom] = useState<number | undefined>();
   const [orientationAnim] = useState(new Animated.Value(3));
 
   const onSwitchCameraPressed = () => {
-    const direction = cameraType === CameraType.Back ? CameraType.Front : CameraType.Back;
+    const direction: TCameraType = cameraType === 'back' ? 'front' : 'back';
     setCameraType(direction);
     setZoom(1); // When changing camera type, reset to default zoom for that camera
     triggerSelectionHapticFeedback();
@@ -190,7 +192,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
               {Platform.OS === 'ios' ? (
                 <Icon name="cameraswitch" type="font-awesome-6" color="#ffffff" />
               ) : (
-                <Icon name={cameraType === CameraType.Back ? 'camera-rear' : 'camera-front'} type="ionicons" color="#ffffff" />
+                <Icon name={cameraType === 'back' ? 'camera-rear' : 'camera-front'} type="ionicons" color="#ffffff" />
               )}
             </Animated.View>
           </TouchableOpacity>
