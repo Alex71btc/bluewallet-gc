@@ -1,9 +1,9 @@
 import { Icon } from '@rneui/base';
 import React, { useRef, useState } from 'react';
 import { Animated, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Camera, Orientation } from 'react-native-camera-kit-no-google';
+import { Camera, CameraType, Orientation } from 'react-native-camera-kit-no-google';
 import type { CameraApi } from 'react-native-camera-kit-no-google';
-import { OnOrientationChangeData, OnReadCodeData } from 'react-native-camera-kit-no-google/dist/CameraProps';
+import type { OnOrientationChangeData, OnReadCodeData } from 'react-native-camera-kit-no-google/dist/CameraProps';
 
 import { isDesktop } from '../blue_modules/environment';
 import { triggerSelectionHapticFeedback } from '../blue_modules/hapticFeedback';
@@ -27,27 +27,25 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
   onReadCode,
 }) => {
   const cameraRef = useRef<CameraApi>(null);
+
   const [torchMode, setTorchMode] = useState(false);
-  type TCameraType = 'back' | 'front';
-  const [cameraType, setCameraType] = useState<TCameraType>('back');
+  const [cameraType, setCameraType] = useState<CameraType>(CameraType.Back);
   const [zoom, setZoom] = useState<number | undefined>();
   const [orientationAnim] = useState(new Animated.Value(3));
 
   const onSwitchCameraPressed = () => {
-    const direction: TCameraType = cameraType === 'back' ? 'front' : 'back';
-    setCameraType(direction);
-    setZoom(1); // When changing camera type, reset to default zoom for that camera
+    const next = cameraType === CameraType.Back ? CameraType.Front : CameraType.Back;
+    setCameraType(next);
+    setZoom(1); // reset zoom when switching camera
     triggerSelectionHapticFeedback();
   };
 
   const onSetTorch = () => {
-    setTorchMode(!torchMode);
+    setTorchMode(prev => !prev);
     triggerSelectionHapticFeedback();
   };
 
-  // Counter-rotate the icons to indicate the actual orientation of the captured photo.
-  // For this example, it'll behave incorrectly since UI orientation is allowed (and already-counter rotates the entire screen)
-  // For real phone apps, lock your UI orientation using a library like 'react-native-orientation-locker'
+  // Counter-rotate icons so UI stays readable when camera reports orientation changes
   const rotateUi = true;
   const uiRotation = orientationAnim.interpolate({
     inputRange: [1, 2, 3, 4],
@@ -55,40 +53,34 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
   });
   const uiRotationStyle = rotateUi ? { transform: [{ rotate: uiRotation }] } : {};
 
-  function rotateUiTo(rotationValue: number) {
+  const rotateUiTo = (rotationValue: number) => {
     Animated.timing(orientationAnim, {
       toValue: rotationValue,
       useNativeDriver: true,
       duration: 200,
       isInteraction: false,
     }).start();
-  }
+  };
 
   const handleZoom = (e: { nativeEvent: { zoom: number } }) => {
-    console.debug('zoom', e.nativeEvent.zoom);
     setZoom(e.nativeEvent.zoom);
   };
 
   const handleOrientationChange = (e: OnOrientationChangeData) => {
     switch (e.nativeEvent.orientation) {
       case Orientation.PORTRAIT_UPSIDE_DOWN:
-        console.debug('orientationChange', 'PORTRAIT_UPSIDE_DOWN');
         rotateUiTo(1);
         break;
       case Orientation.LANDSCAPE_LEFT:
-        console.debug('orientationChange', 'LANDSCAPE_LEFT');
         rotateUiTo(2);
         break;
       case Orientation.PORTRAIT:
-        console.debug('orientationChange', 'PORTRAIT');
         rotateUiTo(3);
         break;
       case Orientation.LANDSCAPE_RIGHT:
-        console.debug('orientationChange', 'LANDSCAPE_RIGHT');
         rotateUiTo(4);
         break;
       default:
-        console.debug('orientationChange', e.nativeEvent);
         break;
     }
   };
@@ -99,18 +91,26 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
 
   return (
     <View style={styles.screen}>
-      {/* Render top buttons only if not desktop as they would not be relevant */}
+      {/* Top buttons: only on phone/tablet */}
       {!isDesktop && (
         <View style={styles.topButtons}>
-          <TouchableOpacity style={[styles.topButton, uiRotationStyle, torchMode ? styles.activeTorch : {}]} onPress={onSetTorch}>
+          <TouchableOpacity
+            style={[styles.topButton, uiRotationStyle, torchMode ? styles.activeTorch : {}]}
+            onPress={onSetTorch}
+          >
             <Animated.View style={styles.topButtonImg}>
               {Platform.OS === 'ios' ? (
-                <Icon name={torchMode ? 'flashlight-on' : 'flashlight-off'} type="font-awesome-6" color={torchMode ? '#000' : '#fff'} />
+                <Icon
+                  name={torchMode ? 'flashlight-on' : 'flashlight-off'}
+                  type="font-awesome-6"
+                  color={torchMode ? '#000' : '#fff'}
+                />
               ) : (
                 <Icon name={torchMode ? 'flash-on' : 'flash-off'} type="ionicons" color={torchMode ? '#000' : '#fff'} />
               )}
             </Animated.View>
           </TouchableOpacity>
+
           <View style={styles.rightButtonsContainer}>
             {showImagePickerButton && (
               <TouchableOpacity
@@ -139,32 +139,36 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
           </View>
         </View>
       )}
-      <Camera
-        ref={cameraRef}
-        style={styles.cameraPreview}
-        cameraType={cameraType}
-        scanBarcode
-        resizeMode="cover"
-        onReadCode={handleReadCode}
-        torchMode={torchMode ? 'on' : 'off'}
-      
-        // ✅ SPEED: kein Motion-Focus-Reset bei animierten/rotierenden QRs
-        resetFocusWhenMotionDetected={false}
 
-        // ✅ SPEED: throttling nicht zu hoch (30ms ist bewährt)
-        // @ts-ignore
-        scanThrottleDelay={30}
+      <View style={styles.cameraContainer}>
+        <Camera
+          ref={cameraRef}
+          style={styles.cameraPreview}
+          cameraType={cameraType}
+          scanBarcode
+          resizeMode="cover"
+          onReadCode={handleReadCode}
+          torchMode={torchMode ? 'on' : 'off'}
 
-        zoom={zoom}
-        onZoom={handleZoom}
-        maxZoom={10}
-        onOrientationChange={handleOrientationChange}
-      />
+          // ✅ SPEED: kein Motion-Focus-Reset bei animierten/rotierenden QRs
+          resetFocusWhenMotionDetected={false}
+
+          // ✅ SPEED: throttling nicht zu hoch (30ms ist bewährt)
+          // @ts-ignore (no-google typings sind je nach Version nicht vollständig)
+          scanThrottleDelay={30}
+
+          zoom={zoom}
+          onZoom={handleZoom}
+          maxZoom={10}
+          onOrientationChange={handleOrientationChange}
+        />
       </View>
+
       <View style={styles.bottomButtons}>
         <TouchableOpacity onPress={onCancelButtonPress}>
           <Animated.Text style={[styles.backTextStyle, uiRotationStyle]}>{loc._.cancel}</Animated.Text>
         </TouchableOpacity>
+
         {isDesktop ? (
           <View style={styles.rightButtonsContainer}>
             {showImagePickerButton && (
@@ -198,7 +202,11 @@ const CameraScreen: React.FC<CameraScreenProps> = ({
               {Platform.OS === 'ios' ? (
                 <Icon name="cameraswitch" type="font-awesome-6" color="#ffffff" />
               ) : (
-                <Icon name={cameraType === 'back' ? 'camera-rear' : 'camera-front'} type="ionicons" color="#ffffff" />
+                <Icon
+                  name={cameraType === CameraType.Back ? 'camera-rear' : 'camera-front'}
+                  type="ionicons"
+                  color="#ffffff"
+                />
               )}
             </Animated.View>
           </TouchableOpacity>
@@ -237,6 +245,13 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
   },
+  spacing: {
+    marginLeft: 20,
+  },
+  rightButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   cameraContainer: {
     justifyContent: 'center',
     flex: 1,
@@ -256,10 +271,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 20,
   },
-  rightButtonsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   bottomButton: {
     backgroundColor: '#222',
     width: 44,
@@ -268,8 +279,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
-  },
-  spacing: {
-    marginLeft: 20,
   },
 });
