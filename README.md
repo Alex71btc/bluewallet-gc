@@ -5,6 +5,12 @@ Goal: self-hosted push notifications + maximum privacy/control (no dependency on
 
 Self-hosted push pipeline (unconfirmed/received/confirmed) confirmed working with our GroundControl fork.
 
+## 🔧 Operator Notes
+
+For reproducible Android builds and release workflow see:
+
+👉 [docs/RELEASE.md](docs/RELEASE.md)
+
 
 ### Components
 - **Android app (this repo)**: React Native build
