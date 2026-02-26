@@ -75,6 +75,9 @@ export type SendDetailsStackParamList = {
     txhex?: string;
     deepLinkPSBT?: string;
     onBarScanned?: string;
+      amount?: number;
+      fee?: number;
+      amountUnit?: BitcoinUnit;
   };
   CreateTransaction: {
     memo?: string;
